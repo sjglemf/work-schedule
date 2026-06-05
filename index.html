@@ -11,6 +11,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .hdr h1{font-size:17px;font-weight:700;flex:1}
 .badge{background:#0a84ff;color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
 .hdr-add{background:#30d158;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.hdr-excel{background:#0a84ff;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#30d158;flex-shrink:0}
 .sync-dot.loading{background:#ff9f0a;animation:pulse 1s infinite}
 .sync-dot.error{background:#ff375f}
@@ -113,6 +114,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   <h1>작업 스케줄</h1>
   <div class="sync-dot loading" id="syncDot" title="동기화 상태"></div>
   <div class="badge" id="totalBadge">-</div>
+  <button class="hdr-excel" onclick="exportExcel()">📥 엑셀</button>
   <button class="hdr-add" onclick="openAddModal()">+ 추가</button>
 </div>
 
@@ -418,8 +420,33 @@ onSnapshot(q, (snap) => {
 const BASE_WITH_ID = BASE_DATA.map((d,i)=>({...d, _uid:'base_'+i}));
 
 // 로컬 삭제 목록 (BASE_DATA 삭제용)
-function loadDeleted(){ try{return new Set(JSON.parse(localStorage.getItem('deleted_ids')||'[]'));}catch(e){return new Set();} }
-function saveDeleted(s){ try{localStorage.setItem('deleted_ids',JSON.stringify([...s]));}catch(e){} }
+// 삭제된 기존 엑셀 항목 ID를 Firebase에 저장/동기화
+let deletedSet = new Set();
+const deletedDocRef = doc(db, 'meta', 'deleted_ids');
+
+// 삭제 목록 실시간 동기화
+import("https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js").then(({onSnapshot: _on, doc: _doc, setDoc: _set})=>{
+  _on(_doc(db,'meta','deleted_ids'), (snap)=>{
+    if(snap.exists()){
+      deletedSet = new Set(snap.data().ids||[]);
+    } else {
+      deletedSet = new Set();
+    }
+    buildAll(); buildOpts();
+    document.getElementById('totalBadge').textContent = ALL_DATA.length.toLocaleString();
+    applyFilters();
+  });
+});
+
+async function saveDeletedFb(set){
+  try{
+    const {setDoc, doc: _doc} = await import("https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js");
+    await setDoc(_doc(db,'meta','deleted_ids'), {ids:[...set]});
+  }catch(e){console.error(e);}
+}
+
+function loadDeleted(){ return deletedSet; }
+function saveDeleted(s){ deletedSet=s; saveDeletedFb(s); }
 
 function buildAll() {
   const deleted = loadDeleted();
@@ -668,6 +695,50 @@ async function deleteItem(uid, isFb, shipName){
 window.openPanel=openPanel; window.closePanel=closePanel;
 window.toggleSel=toggleSel; window.resetCurrent=resetCurrent; window.applyAndClose=applyAndClose;
 window.goPage=goPage; window.clearSearch=clearSearch;
+window.exportExcel = exportExcel;
+function exportExcel(){
+  showToast('📥 엑셀 준비 중...');
+  // SheetJS CDN 동적 로드
+  if(window.XLSX){
+    _doExport();
+  } else {
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=_doExport;
+    document.head.appendChild(s);
+  }
+}
+function _doExport(){
+  // 원본 엑셀과 동일한 컬럼 순서
+  const colMap = [
+    {key:'날짜',        label:'날짜'},
+    {key:'선명',        label:'선명'},
+    {key:'선사',        label:'선사'},
+    {key:'장소',        label:'조선소/장소'},
+    {key:'메인엔진',    label:'메인엔진 모델'},
+    {key:'메인GOV',     label:'메인GOV'},
+    {key:'메인작업',    label:'메인  작업'},
+    {key:'발전기',      label:'발전기 모델'},
+    {key:'발전기GOV',   label:'발전기 GOV'},
+    {key:'발전기작업',  label:'발전기작업'},
+    {key:'하가일정',    label:'하가일정'},
+    {key:'상태',        label:'상태'},
+    {key:'구분',        label:'국내/해외'},
+    {key:'비고',        label:'비고'},
+  ];
+  const rows = [colMap.map(c=>c.label)];
+  ALL_DATA.forEach(d=>{
+    rows.push(colMap.map(c=>d[c.key]||''));
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [12,16,10,14,16,10,10,18,10,10,12,6,8,20].map(w=>({wch:w}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '작업스케줄');
+  const today = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `작업스케줄_${today}.xlsx`);
+  showToast('✅ 엑셀 다운로드 완료!');
+}
+
 window.openAddModal=openAddModal; window.closeAddModal=closeAddModal;
 window.submitAdd=submitAdd; window.deleteItem=deleteItem;
 window.applyFilters=applyFilters;
