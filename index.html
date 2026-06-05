@@ -271,7 +271,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   <div class="modal-handle"></div>
   <div class="modal-header">
     <h2>✏️ 일정 수정</h2>
-   <button class="modal-close" onclick="closeEditModal()">✕</button>
+   <button onclick="openEditModal('${row.uid}',${row.isFb})">
+수정
+</button>
   </div>
   <div class="modal-body">
     <input type="hidden" id="e_uid">
