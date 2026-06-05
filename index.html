@@ -271,7 +271,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   <div class="modal-handle"></div>
   <div class="modal-header">
     <h2>✏️ 일정 수정</h2>
-   <button class="modal-close" onclick="closeEditModal()">✕</button>
+    <button class="modal-close" onclick="closeEditModal()">✕</button>
   </div>
   <div class="modal-body">
     <input type="hidden" id="e_uid">
@@ -487,7 +487,7 @@ function renderList(){
     document.getElementById('pager').style.display='none'; return;
   }
   const start=(page-1)*PAGE, end=Math.min(start+PAGE,total);
-  listEl.innerHTML=filtered.slice(start,end).map(d=>{
+  listEl.innerHTML=filtered.slice(start,end).map((d,i)=>{
     const sClass='s-'+(d.상태||'');
     const newClass=d._added?' is-new':'';
     const uid=d._fbId||d._uid||'';
@@ -515,7 +515,7 @@ function renderList(){
       <div class="card-top">
         <span class="ship-name">${d.선명||'-'}</span>
         <span class="status-badge ${sClass}">${d.상태||'-'}</span>
-        <button class="edit-btn" onclick="openEditModal('${uid}',${isFb},${JSON.stringify(JSON.stringify(d))})">✏️</button>
+        <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
         <button class="del-btn" onclick="deleteItem('${uid}',${isFb},'${(d.선명||'').replace(/'/g,"\\'")}')">🗑</button>
       </div>
       <div class="card-meta">
@@ -558,14 +558,15 @@ function applyAndClose(){closePanel();applyFilters();}
 
 // 수정 모달
 let editData = null;
-function openEditModal(uid, isFb, dataStr) {
-  try { editData = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr; } catch(e){ return; }
-  document.getElementById('e_uid').value = uid;
-  document.getElementById('e_isFb').value = isFb;
-  const flds = ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','비고'];
-  flds.forEach(k => {
-    const el = document.getElementById('e_'+k);
-    if(el) el.value = editData[k] || '';
+function openEditByIdx(idx) {
+  const d = filtered[idx];
+  if(!d) return;
+  editData = d;
+  document.getElementById('e_uid').value = d._fbId || d._uid || '';
+  document.getElementById('e_isFb').value = !!d._fbId;
+  ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','비고'].forEach(k=>{
+    const el=document.getElementById('e_'+k);
+    if(el) el.value = d[k]||'';
   });
   document.getElementById('editOverlay').classList.add('open');
   requestAnimationFrame(()=>document.getElementById('editModal').classList.add('open'));
@@ -607,7 +608,7 @@ async function submitEdit(){
   btn.textContent='💾 수정 저장'; btn.disabled=false;
 }
 
-window.openEditModal=openEditModal; window.closeEditModal=closeEditModal; window.submitEdit=submitEdit;
+window.openEditByIdx=openEditByIdx; window.closeEditModal=closeEditModal; window.submitEdit=submitEdit;
 
 function openAddModal(){
   document.getElementById('modalOverlay').classList.add('open');
