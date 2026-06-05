@@ -105,6 +105,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .btn-edit-submit{width:100%;background:#0a84ff;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:700;color:#fff;cursor:pointer}
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#1c1c1e;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
+.map-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:700}
+.map-overlay.open{display:block}
+.map-modal{position:fixed;bottom:0;left:0;right:0;height:75vh;background:#fff;border-radius:20px 20px 0 0;display:flex;flex-direction:column;z-index:701;transform:translateY(100%);transition:transform .3s}
+.map-modal.open{transform:translateY(0)}
+.map-handle{width:36px;height:4px;background:#d1d1d6;border-radius:2px;margin:12px auto 0;flex-shrink:0}
+.map-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #e5e5ea;flex-shrink:0}
+.map-header h2{font-size:16px;font-weight:700}
+.map-close{background:none;border:none;font-size:24px;color:#8e8e93;cursor:pointer}
+.map-body{flex:1;overflow:hidden}
+.map-body iframe{width:100%;height:100%;border:none}
 </style>
 </head>
 <body>
@@ -258,6 +268,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- 선박 위치 모달 -->
+<div class="map-overlay" id="mapOverlay" onclick="closeMapModal()"></div>
+<div class="map-modal" id="mapModal">
+  <div class="map-handle"></div>
+  <div class="map-header">
+    <h2 id="mapTitle">🚢 선박 위치</h2>
+    <button class="map-close" onclick="closeMapModal()">✕</button>
+  </div>
+  <div class="map-body">
+    <iframe id="mapFrame" src="" allowfullscreen></iframe>
+  </div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
@@ -563,9 +586,18 @@ window.deleteItem=deleteItem;
 
 function searchVessel(name){
   if(!name) return;
-  window.open('https://www.marinetraffic.com/en/ais/index/ships/all/shipname:'+encodeURIComponent(name), '_blank');
+  document.getElementById('mapTitle').textContent = '🚢 ' + name;
+  document.getElementById('mapFrame').src = 'https://www.vesselfinder.com/?name='+encodeURIComponent(name)+'&zoom=4';
+  document.getElementById('mapOverlay').classList.add('open');
+  requestAnimationFrame(()=>document.getElementById('mapModal').classList.add('open'));
+}
+function closeMapModal(){
+  document.getElementById('mapOverlay').classList.remove('open');
+  document.getElementById('mapModal').classList.remove('open');
+  document.getElementById('mapFrame').src='';
 }
 window.searchVessel=searchVessel;
+window.closeMapModal=closeMapModal;
 
 init();
 </script>
