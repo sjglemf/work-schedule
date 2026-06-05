@@ -586,15 +586,7 @@ window.deleteItem=deleteItem;
 
 function searchVessel(name){
   if(!name) return;
-  document.getElementById('mapTitle').textContent = '🚢 ' + name;
-  document.getElementById('mapFrame').src = 'https://www.vesselfinder.com/?name='+encodeURIComponent(name)+'&zoom=4';
-  document.getElementById('mapOverlay').classList.add('open');
-  requestAnimationFrame(()=>document.getElementById('mapModal').classList.add('open'));
-}
-function closeMapModal(){
-  document.getElementById('mapOverlay').classList.remove('open');
-  document.getElementById('mapModal').classList.remove('open');
-  document.getElementById('mapFrame').src='';
+  window.open('https://www.marinetraffic.com/en/ais/index/ships/all/shipname:'+encodeURIComponent(name), '_blank');
 }
 window.searchVessel=searchVessel;
 window.closeMapModal=closeMapModal;
