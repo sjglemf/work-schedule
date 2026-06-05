@@ -586,7 +586,30 @@ window.deleteItem=deleteItem;
 
 function searchVessel(name){
   if(!name) return;
-  window.open('https://www.vesselfinder.com/?name='+encodeURIComponent(name), '_blank');
+  document.getElementById('mapTitle').textContent = '🚢 ' + name;
+  // VesselFinder aismap.js embed - 선명으로 지도 표시
+  const mapBody = document.getElementById('mapBody');
+  mapBody.innerHTML = `
+    <div id="vf_map_container" style="width:100%;height:100%"></div>
+    <script>
+      var width="100%";
+      var height="100%";
+      var latitude="35";
+      var longitude="128";
+      var zoom="4";
+      var names=true;
+      var vessel_name="${name.replace(/"/g,'&quot;')}";
+      var show_track=true;
+    <\/script>
+    <script src="https://www.vesselfinder.com/aismap.js"><\/script>
+  `;
+  document.getElementById('mapOverlay').classList.add('open');
+  requestAnimationFrame(()=>document.getElementById('mapModal').classList.add('open'));
+}
+function closeMapModal(){
+  document.getElementById('mapOverlay').classList.remove('open');
+  document.getElementById('mapModal').classList.remove('open');
+  document.getElementById('mapBody').innerHTML = '';
 }
 window.searchVessel=searchVessel;
 window.closeMapModal=closeMapModal;
