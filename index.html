@@ -588,15 +588,16 @@ function searchVessel(idx){
   const d = filtered[idx];
   if(!d || !d.선명) return;
   const name = d.선명;
-  document.getElementById('mapTitle').textContent = '🚢 ' + name;
-  const mapBody = document.getElementById('mapBody');
-  mapBody.innerHTML = `<iframe 
-    src="https://www.vesselfinder.com/aismap?vessel_name=${encodeURIComponent(name)}&zoom=8&width=100%&height=100%&names=true&show_track=true&lat=35&lon=128"
-    style="width:100%;height:100%;border:none"
-    allowfullscreen
-  ></iframe>`;
-  document.getElementById('mapOverlay').classList.add('open');
-  requestAnimationFrame(()=>document.getElementById('mapModal').classList.add('open'));
+  // 클립보드 복사
+  navigator.clipboard.writeText(name).then(()=>{
+    showToast(`📋 "${name}" 복사됨! MarineTraffic에서 붙여넣기 하세요`);
+  }).catch(()=>{
+    showToast(`🚢 MarineTraffic으로 이동합니다`);
+  });
+  // MarineTraffic 앱/웹으로 이동
+  setTimeout(()=>{
+    window.open('https://www.marinetraffic.com/en/ais/index/ships/all/shipname:'+encodeURIComponent(name), '_blank');
+  }, 500);
 }
 function closeMapModal(){
   document.getElementById('mapOverlay').classList.remove('open');
