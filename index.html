@@ -590,24 +590,11 @@ function searchVessel(idx){
   const name = d.선명;
   document.getElementById('mapTitle').textContent = '🚢 ' + name;
   const mapBody = document.getElementById('mapBody');
-  mapBody.innerHTML = `
-    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f5f7">
-      <div style="text-align:center;color:#8e8e93">
-        <div style="font-size:40px;margin-bottom:12px">🔍</div>
-        <div style="font-size:14px;font-weight:600">지도 로딩 중...</div>
-      </div>
-    </div>
-    <script>
-      (function(){
-        var s1=document.createElement('script');
-        s1.textContent='var width="100%";var height="100%";var latitude="35";var longitude="128";var zoom="5";var names=true;var vessel_name="'+name.replace(/'/g,"\\'")+'";var show_track=true;';
-        document.body.appendChild(s1);
-        var s2=document.createElement('script');
-        s2.src='https://www.vesselfinder.com/aismap.js';
-        document.body.appendChild(s2);
-      })();
-    <\/script>
-  `;
+  mapBody.innerHTML = `<iframe 
+    src="https://www.vesselfinder.com/aismap?vessel_name=${encodeURIComponent(name)}&zoom=8&width=100%&height=100%&names=true&show_track=true&lat=35&lon=128"
+    style="width:100%;height:100%;border:none"
+    allowfullscreen
+  ></iframe>`;
   document.getElementById('mapOverlay').classList.add('open');
   requestAnimationFrame(()=>document.getElementById('mapModal').classList.add('open'));
 }
