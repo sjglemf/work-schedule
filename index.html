@@ -11,7 +11,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .hdr h1{font-size:17px;font-weight:700;flex:1}
 .badge{background:#0a84ff;color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
 .hdr-add{background:#30d158;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
-.hdr-excel{background:#0a84ff;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#30d158;flex-shrink:0}
 .sync-dot.loading{background:#ff9f0a;animation:pulse 1s infinite}
 .sync-dot.error{background:#ff375f}
@@ -30,7 +29,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .sort-select{background:none;border:none;font-size:13px;color:#0a84ff;font-weight:600;cursor:pointer;outline:none}
 .list{padding:0 0 80px}
 .card{background:#fff;padding:14px 16px;display:flex;flex-direction:column;gap:6px;border-bottom:0.5px solid #e5e5ea}
-.card.is-new{border-left:4px solid #30d158}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .ship-name{font-size:16px;font-weight:700;color:#0a84ff;flex:1}
 .status-badge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:8px;white-space:nowrap}
@@ -38,10 +36,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .s-예정{background:#e3f2fd;color:#1565c0}
 .s-연기{background:#fff3e0;color:#e65100}
 .s-캔슬{background:#fce4ec;color:#c62828}
-.del-btn{background:none;border:none;color:#c7c7cc;font-size:20px;padding:2px 4px;cursor:pointer;flex-shrink:0}
-.del-btn:active{color:#ff375f}
-.edit-btn{background:none;border:none;color:#c7c7cc;font-size:18px;padding:2px 4px;cursor:pointer;flex-shrink:0}
+.card-btns{display:flex;gap:2px;flex-shrink:0}
+.edit-btn{background:none;border:none;color:#c7c7cc;font-size:18px;padding:2px 4px;cursor:pointer}
 .edit-btn:active{color:#0a84ff}
+.del-btn{background:none;border:none;color:#c7c7cc;font-size:18px;padding:2px 4px;cursor:pointer}
+.del-btn:active{color:#ff375f}
 .card-meta{display:flex;align-items:center;gap:6px;font-size:13px;color:#3c3c43;flex-wrap:wrap}
 .card-meta .sep{color:#c7c7cc}
 .card-date{font-size:13px;color:#8e8e93;font-weight:500}
@@ -95,7 +94,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .modal-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
 .form-group{display:flex;flex-direction:column;gap:6px}
 .form-group label{font-size:13px;font-weight:600;color:#3c3c43}
-.form-group label .req{color:#ff375f;margin-left:2px}
+.req{color:#ff375f;margin-left:2px}
 .form-input{background:#f2f2f7;border:none;border-radius:12px;padding:12px 14px;font-size:15px;color:#1c1c1e;outline:none;width:100%;font-family:inherit}
 .form-input:focus{background:#e8f2ff}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -103,6 +102,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .form-divider{font-size:12px;font-weight:700;color:#8e8e93;letter-spacing:.5px;border-bottom:1px solid #f2f2f7;padding-bottom:8px}
 .modal-footer{padding:12px 16px 30px;border-top:0.5px solid #e5e5ea}
 .btn-submit{width:100%;background:#30d158;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:700;color:#fff;cursor:pointer}
+.btn-edit-submit{width:100%;background:#0a84ff;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:700;color:#fff;cursor:pointer}
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#1c1c1e;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
 </style>
@@ -112,9 +112,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 <div class="hdr">
   <span style="font-size:20px">⚙️</span>
   <h1>작업 스케줄</h1>
-  <div class="sync-dot loading" id="syncDot" title="동기화 상태"></div>
+  <div class="sync-dot loading" id="syncDot"></div>
   <div class="badge" id="totalBadge">-</div>
-  <button class="hdr-excel" onclick="exportExcel()">📥 엑셀</button>
   <button class="hdr-add" onclick="openAddModal()">+ 추가</button>
 </div>
 
@@ -157,6 +156,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   <span class="dot" id="filterDot"></span>
 </button>
 
+<!-- 필터 패널 -->
 <div class="panel-overlay" id="overlay" onclick="closePanel()"></div>
 <div class="panel" id="panel">
   <div class="panel-handle"></div>
@@ -171,7 +171,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   </div>
 </div>
 
-<div class="modal-overlay" id="modalOverlay" onclick="closeAddModal()"></div>
+<!-- 추가 모달 -->
+<div class="modal-overlay" id="addOverlay" onclick="closeAddModal()"></div>
 <div class="modal" id="addModal">
   <div class="modal-handle"></div>
   <div class="modal-header">
@@ -180,92 +181,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   </div>
   <div class="modal-body">
     <div class="form-row">
-      <div class="form-group">
-        <label>날짜<span class="req">*</span></label>
-        <input type="date" class="form-input" id="f_날짜">
-      </div>
-      <div class="form-group">
-        <label>상태</label>
-        <select class="form-select" id="f_상태">
-          <option value="예정">예정</option>
-          <option value="완료">완료</option>
-          <option value="연기">연기</option>
-          <option value="캔슬">캔슬</option>
-        </select>
-      </div>
+      <div class="form-group"><label>날짜<span class="req">*</span></label><input type="date" class="form-input" id="a_날짜"></div>
+      <div class="form-group"><label>상태</label><select class="form-select" id="a_상태"><option value="예정">예정</option><option value="완료">완료</option><option value="연기">연기</option><option value="캔슬">캔슬</option></select></div>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label>선명<span class="req">*</span></label>
-        <input type="text" class="form-input" id="f_선명" placeholder="선명 입력">
-      </div>
-      <div class="form-group">
-        <label>선사</label>
-        <input type="text" class="form-input" id="f_선사" placeholder="선사 입력">
-      </div>
+      <div class="form-group"><label>선명<span class="req">*</span></label><input type="text" class="form-input" id="a_선명" placeholder="선명 입력"></div>
+      <div class="form-group"><label>선사</label><input type="text" class="form-input" id="a_선사" placeholder="선사 입력"></div>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label>조선소/장소</label>
-        <input type="text" class="form-input" id="f_장소" placeholder="장소 입력">
-      </div>
-      <div class="form-group">
-        <label>국내/해외</label>
-        <select class="form-select" id="f_구분">
-          <option value="국내">국내</option>
-          <option value="해외">해외</option>
-        </select>
-      </div>
+      <div class="form-group"><label>조선소/장소</label><input type="text" class="form-input" id="a_장소" placeholder="장소 입력"></div>
+      <div class="form-group"><label>국내/해외</label><select class="form-select" id="a_구분"><option value="국내">국내</option><option value="해외">해외</option></select></div>
     </div>
     <div class="form-divider">🔧 메인엔진</div>
-    <div class="form-group">
-      <label>메인엔진 모델</label>
-      <input type="text" class="form-input" id="f_메인엔진" placeholder="예: HANSHIN LH41L">
-    </div>
+    <div class="form-group"><label>메인엔진 모델</label><input type="text" class="form-input" id="a_메인엔진" placeholder="예: HANSHIN LH41L"></div>
     <div class="form-row">
-      <div class="form-group">
-        <label>메인 GOV</label>
-        <input type="text" class="form-input" id="f_메인GOV" placeholder="예: UG-10L">
-      </div>
-      <div class="form-group">
-        <label>메인 작업</label>
-        <input type="text" class="form-input" id="f_메인작업" placeholder="예: UPG">
-      </div>
+      <div class="form-group"><label>메인 GOV</label><input type="text" class="form-input" id="a_메인GOV" placeholder="예: UG-10L"></div>
+      <div class="form-group"><label>메인 작업</label><input type="text" class="form-input" id="a_메인작업" placeholder="예: UPG"></div>
     </div>
     <div class="form-divider">⚡ 발전기</div>
-    <div class="form-group">
-      <label>발전기 모델</label>
-      <input type="text" class="form-input" id="f_발전기" placeholder="예: YANMAR 6NY16L-DN">
-    </div>
+    <div class="form-group"><label>발전기 모델</label><input type="text" class="form-input" id="a_발전기" placeholder="예: YANMAR 6NY16L-DN"></div>
     <div class="form-row">
-      <div class="form-group">
-        <label>발전기 GOV</label>
-        <input type="text" class="form-input" id="f_발전기GOV" placeholder="예: NZ-61">
-      </div>
-      <div class="form-group">
-        <label>발전기 작업</label>
-        <input type="text" class="form-input" id="f_발전기작업" placeholder="예: PG">
-      </div>
+      <div class="form-group"><label>발전기 GOV</label><input type="text" class="form-input" id="a_발전기GOV" placeholder="예: NZ-61"></div>
+      <div class="form-group"><label>발전기 작업</label><input type="text" class="form-input" id="a_발전기작업" placeholder="예: PG"></div>
     </div>
     <div class="form-divider">📋 기타</div>
     <div class="form-row">
-      <div class="form-group">
-        <label>하가일정</label>
-        <input type="date" class="form-input" id="f_하가일정">
-      </div>
+      <div class="form-group"><label>하가일정</label><input type="date" class="form-input" id="a_하가일정"></div>
       <div class="form-group" style="opacity:0"></div>
     </div>
-    <div class="form-group">
-      <label>비고</label>
-      <input type="text" class="form-input" id="f_비고" placeholder="특이사항 입력">
-    </div>
+    <div class="form-group"><label>비고</label><input type="text" class="form-input" id="a_비고" placeholder="특이사항 입력"></div>
   </div>
-  <div class="modal-footer">
-    <button class="btn-submit" onclick="submitAdd()">✅ 일정 추가</button>
-  </div>
+  <div class="modal-footer"><button class="btn-submit" id="addSubmitBtn" onclick="submitAdd()">✅ 일정 추가</button></div>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <!-- 수정 모달 -->
 <div class="modal-overlay" id="editOverlay" onclick="closeEditModal()"></div>
@@ -276,97 +223,45 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
     <button class="modal-close" onclick="closeEditModal()">✕</button>
   </div>
   <div class="modal-body">
-    <input type="hidden" id="e_uid">
-    <input type="hidden" id="e_isFb">
     <div class="form-row">
-      <div class="form-group">
-        <label>날짜<span class="req">*</span></label>
-        <input type="date" class="form-input" id="e_날짜">
-      </div>
-      <div class="form-group">
-        <label>상태</label>
-        <select class="form-select" id="e_상태">
-          <option value="예정">예정</option>
-          <option value="완료">완료</option>
-          <option value="연기">연기</option>
-          <option value="캔슬">캔슬</option>
-        </select>
-      </div>
+      <div class="form-group"><label>날짜<span class="req">*</span></label><input type="date" class="form-input" id="e_날짜"></div>
+      <div class="form-group"><label>상태</label><select class="form-select" id="e_상태"><option value="예정">예정</option><option value="완료">완료</option><option value="연기">연기</option><option value="캔슬">캔슬</option></select></div>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label>선명<span class="req">*</span></label>
-        <input type="text" class="form-input" id="e_선명" placeholder="선명 입력">
-      </div>
-      <div class="form-group">
-        <label>선사</label>
-        <input type="text" class="form-input" id="e_선사" placeholder="선사 입력">
-      </div>
+      <div class="form-group"><label>선명<span class="req">*</span></label><input type="text" class="form-input" id="e_선명" placeholder="선명 입력"></div>
+      <div class="form-group"><label>선사</label><input type="text" class="form-input" id="e_선사" placeholder="선사 입력"></div>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label>조선소/장소</label>
-        <input type="text" class="form-input" id="e_장소" placeholder="장소 입력">
-      </div>
-      <div class="form-group">
-        <label>국내/해외</label>
-        <select class="form-select" id="e_구분">
-          <option value="국내">국내</option>
-          <option value="해외">해외</option>
-        </select>
-      </div>
+      <div class="form-group"><label>조선소/장소</label><input type="text" class="form-input" id="e_장소" placeholder="장소 입력"></div>
+      <div class="form-group"><label>국내/해외</label><select class="form-select" id="e_구분"><option value="국내">국내</option><option value="해외">해외</option></select></div>
     </div>
     <div class="form-divider">🔧 메인엔진</div>
-    <div class="form-group">
-      <label>메인엔진 모델</label>
-      <input type="text" class="form-input" id="e_메인엔진" placeholder="예: HANSHIN LH41L">
-    </div>
+    <div class="form-group"><label>메인엔진 모델</label><input type="text" class="form-input" id="e_메인엔진" placeholder="예: HANSHIN LH41L"></div>
     <div class="form-row">
-      <div class="form-group">
-        <label>메인 GOV</label>
-        <input type="text" class="form-input" id="e_메인GOV" placeholder="예: UG-10L">
-      </div>
-      <div class="form-group">
-        <label>메인 작업</label>
-        <input type="text" class="form-input" id="e_메인작업" placeholder="예: UPG">
-      </div>
+      <div class="form-group"><label>메인 GOV</label><input type="text" class="form-input" id="e_메인GOV" placeholder="예: UG-10L"></div>
+      <div class="form-group"><label>메인 작업</label><input type="text" class="form-input" id="e_메인작업" placeholder="예: UPG"></div>
     </div>
     <div class="form-divider">⚡ 발전기</div>
-    <div class="form-group">
-      <label>발전기 모델</label>
-      <input type="text" class="form-input" id="e_발전기" placeholder="예: YANMAR 6NY16L-DN">
-    </div>
+    <div class="form-group"><label>발전기 모델</label><input type="text" class="form-input" id="e_발전기" placeholder="예: YANMAR 6NY16L-DN"></div>
     <div class="form-row">
-      <div class="form-group">
-        <label>발전기 GOV</label>
-        <input type="text" class="form-input" id="e_발전기GOV" placeholder="예: NZ-61">
-      </div>
-      <div class="form-group">
-        <label>발전기 작업</label>
-        <input type="text" class="form-input" id="e_발전기작업" placeholder="예: PG">
-      </div>
+      <div class="form-group"><label>발전기 GOV</label><input type="text" class="form-input" id="e_발전기GOV" placeholder="예: NZ-61"></div>
+      <div class="form-group"><label>발전기 작업</label><input type="text" class="form-input" id="e_발전기작업" placeholder="예: PG"></div>
     </div>
     <div class="form-divider">📋 기타</div>
     <div class="form-row">
-      <div class="form-group">
-        <label>하가일정</label>
-        <input type="date" class="form-input" id="e_하가일정">
-      </div>
+      <div class="form-group"><label>하가일정</label><input type="date" class="form-input" id="e_하가일정"></div>
       <div class="form-group" style="opacity:0"></div>
     </div>
-    <div class="form-group">
-      <label>비고</label>
-      <input type="text" class="form-input" id="e_비고" placeholder="특이사항 입력">
-    </div>
+    <div class="form-group"><label>비고</label><input type="text" class="form-input" id="e_비고" placeholder="특이사항 입력"></div>
   </div>
-  <div class="modal-footer">
-    <button class="btn-submit" id="editSubmitBtn" onclick="submitEdit()">💾 수정 저장</button>
-  </div>
+  <div class="modal-footer"><button class="btn-edit-submit" id="editSubmitBtn" onclick="submitEdit()">💾 수정 저장</button></div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, setDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyANdl614ICcDs5c5jB1hD5aV29mCjsGnMk",
@@ -374,8 +269,7 @@ const firebaseConfig = {
   projectId: "dautech-cd57e",
   storageBucket: "dautech-cd57e.firebasestorage.app",
   messagingSenderId: "324355154795",
-  appId: "1:324355154795:web:4c7015bb1ac56ddd70222e",
-  measurementId: "G-L6F1DBK474"
+  appId: "1:324355154795:web:4c7015bb1ac56ddd70222e"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -385,76 +279,46 @@ const PAGE = 20;
 let ALL_DATA = [], filtered = [], page = 1, currentPanel = null;
 const sel = {상태:new Set(), 구분:new Set(), 메인GOV:new Set(), 발전기GOV:new Set()};
 let OPTS = {};
+let fbSchedules = [];   // Firebase 추가/수정 데이터
+let deletedIds = new Set(); // 숨길 기존 엑셀 항목 uid
 const BASE_DATA = 
 [{"날짜": "2023-10-16", "선명": "SEONGHO PIOCE", "선사": "성호해운", "장소": "대불조선", "메인엔진": "", "메인GOV": "UG-10", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2023-10-16", "선명": "GAS BROADWAY", "선사": "디와이마린", "장소": "강남조선", "메인엔진": "", "메인GOV": "UG-10", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2023-10-19", "선명": "KTS SILVER", "선사": "세줄선박", "장소": "용담부두", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S165L-DN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2023-10-23", "선명": "303 HYODONG CHEMI", "선사": "효동선박", "장소": "KJ조선", "메인엔진": "", "메인GOV": "UG-10", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2023-11-04", "선명": "PIONEER", "선사": "대유상선", "장소": "포항", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "RHD6-PC", "메인작업": "", "발전기": "YANMAR 6HAL2-WHT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2023-11-10", "선명": "PRINCESS SANGO", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "MAKITA 6L35MC6.1", "메인GOV": "MG-800", "메인작업": "UPG", "발전기": "YANMAR 6N165L-EW", "발전기GOV": "NZ-61", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2023-12-14", "선명": "BEGONIA", "선사": "OJS", "장소": "그린월드", "메인엔진": "MAN 6S35MC7", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-01-04", "선명": "111 HYODONG CHEMI", "선사": "동보해운", "장소": "강남조선", "메인엔진": "MAN 8L28/32A", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-01-05", "선명": "MS GAS", "선사": "MSSM", "장소": "울산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S165L-HT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-01-05", "선명": "PRINCESS AMBER", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "MAN 6L35MC6.1", "메인GOV": "MG-800", "메인작업": "UPG", "발전기": "YANMAR 6N165L-", "발전기GOV": "MECH", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-01-07", "선명": "GREEN GAS", "선사": "MSSM", "장소": "KJ조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-02-06", "선명": "NO.1 EUNHEE", "선사": "칸토탈", "장소": "감만부두", "메인엔진": "MAK 6M25", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-02-10", "선명": "DONGBANG GIANT NO.3", "선사": "동방(STX)", "장소": "MALAYSIA MMHE", "메인엔진": "MAN 7L32/40", "메인GOV": "", "메인작업": "P", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2024-02-13", "선명": "9 KYUNG YANG", "선사": "경양수산", "장소": "우리조선", "메인엔진": "NIIGATA 6M28", "메인GOV": "", "메인작업": "", "발전기": "NIIGATA 6L16XC", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-02-14", "선명": "650 DONGWON", "선사": "동원수산", "장소": "우리조선", "메인엔진": "AKASAKA K28", "메인GOV": "", "메인작업": "", "발전기": "NIIGATA 6NSD", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-02-15", "선명": "SUNNY QUEEN", "선사": "KTM", "장소": "여수", "메인엔진": "AKASAKA UEC33LS2", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-02-17", "선명": "VIRGO PHOENIX", "선사": "KTM", "장소": "울산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-SN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-02-26", "선명": "KEOYOUNG STAR", "선사": "동국상선", "장소": "선진셔우드", "메인엔진": "HANSHIN LH36LA", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-HN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-02-26", "선명": "SAMPYO 5", "선사": "삼표해운", "장소": "여수해양", "메인엔진": "MAKITA 6L35MC", "메인GOV": "MG-800", "메인작업": "", "발전기": "YANMAR 6NY16L-UN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-02-26", "선명": "DB SUNNY", "선사": "동방쉽핑", "장소": "선진조선", "메인엔진": "", "메인GOV": "UG-8", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-03-04", "선명": "KS HERMES", "선사": "JL OCEAN", "장소": "목포우승", "메인엔진": "MAN 8L50MC", "메인GOV": "", "메인작업": "", "발전기": "DAIHATSU 6DK20", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-03-08", "선명": "LAKE AURORA", "선사": "지성해운", "장소": "통영", "메인엔진": "AKASAKA UEC33LS2", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-03-09", "선명": "ASIAN GRACE", "선사": "WSM", "장소": "KJ조선", "메인엔진": "HITACHI 6S35MC7", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N165L-", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-03-09", "선명": "620 DONGWON", "선사": "동원수산", "장소": "우리조선", "메인엔진": "NIIGATA 6M28", "메인GOV": "", "메인작업": "", "발전기": "NIIGATA 6L16XC", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-03-11", "선명": "CHEONGDAM", "선사": "청담해운", "장소": "마스텍", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "", "메인작업": "", "발전기": "NIIGATA 6L16XC", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-03-13", "선명": "KEOYOUNG BLUE 1", "선사": "동국상선", "장소": "영도선진", "메인엔진": "HANSHIN LA32G", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-UW", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-03-15", "선명": "YN GWANGYANG", "선사": "포천마린", "장소": "여수입항", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-SW", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-03-20", "선명": "KOKA MARU", "선사": "동국상선", "장소": "부산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-DW", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "연기", "구분": "국내", "비고": ""}, {"날짜": "2024-03-25", "선명": "BUENA DIOSA", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "AKASAKA A41", "메인GOV": "UG-10L", "메인작업": "UPG", "발전기": "DAIHATSU DL-16Ae", "발전기GOV": "PSG", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-04-29", "선명": "LOTUS SAMBU", "선사": "삼부해운", "장소": "대불조선", "메인엔진": "HANSHIN LH46LA", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-05-07", "선명": "ROYAL SAMBU", "선사": "삼부해운", "장소": "강남조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-05-13", "선명": "DONGBANG GIANT NO.5", "선사": "동방(훼어선박)", "장소": "MALAYSIA MMHE", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "", "메인작업": "G", "발전기": "YANMAR 6NY16L-UN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2024-05-15", "선명": "KEOYOUNG DREAM 3", "선사": "거영해운", "장소": "8부두", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-SW", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-05-15", "선명": "KOKA MARU", "선사": "동국상선", "장소": "부산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-DW", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "연기", "구분": "국내", "비고": ""}, {"날짜": "2024-05-16", "선명": "MARINE HERCULES", "선사": "로드스타마린", "장소": "여수", "메인엔진": "MAN 27/38", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-05-17", "선명": "BELIEF GAS", "선사": "MSSM", "장소": "KJ조선", "메인엔진": "AKASAKA 6UEC33LS2", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-05-20", "선명": "DL DIAMOND", "선사": "동림탱커", "장소": "부산", "메인엔진": "HANSHIN LH46LA", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-05-25", "선명": "VIRGO PHOENIX", "선사": "KTM", "장소": "여수", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-SN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-05-28", "선명": "GALAXY SAMBU", "선사": "삼부해운", "장소": "강남조선", "메인엔진": "HANSHIN LH38L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-05-31", "선명": "DL RUBY", "선사": "동림탱커", "장소": "YS조선", "메인엔진": "MAN 6L35MC-MK6", "메인GOV": "MG-800", "메인작업": "UPNG", "발전기": "YANMAR 6N165L-UN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-06-03", "선명": "COSMO FORTUNE", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "AKASAKA 5UEC33LS2", "메인GOV": "PGA-12", "메인작업": "PG", "발전기": "", "발전기GOV": "", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-06-05", "선명": "KEOYOUNG DREAM 1", "선사": "거영해운", "장소": "부산", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR N165L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-06-12", "선명": "PRINCESS TOPAZ", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "MAN 6L35MC6.1", "메인GOV": "MG-800", "메인작업": "UPG", "발전기": "YANMAR 6N165L-EW", "발전기GOV": "NZ-61", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-06-17", "선명": "PACIFIC SAMBU", "선사": "삼부해운", "장소": "SW조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "CATERPILLAR 3406", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-06-18", "선명": "GAS FAIRWAY", "선사": "디와이마린", "장소": "선진셔우드", "메인엔진": "MAKITA 5L25MC6.1", "메인GOV": "MG-800", "메인작업": "GN", "발전기": "YANMAR 6N165L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-06-19", "선명": "KEOYOUNG SEVEN", "선사": "거영해운", "장소": "동일조선", "메인엔진": "AKASAKA A34", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6HAL2-HTN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-06-27", "선명": "308 HYODONG CHEMI", "선사": "효동선박", "장소": "울산외항", "메인엔진": "HANSHIN LH41LA", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-06-28", "선명": "KEOYOUNG STAR 3", "선사": "거영해운", "장소": "감만동측", "메인엔진": "HANSHIN LA32G", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-03", "선명": "DL AMBER", "선사": "동림탱커", "장소": "감만동측", "메인엔진": "MAN 6S35MC-MK6", "메인GOV": "MG-800", "메인작업": "UPNG", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-04", "선명": "DONGJIN FORTUNE", "선사": "동진상선", "장소": "7부두", "메인엔진": "MAN 8S35MC", "메인GOV": "PGA-58", "메인작업": "", "발전기": "YANMAR M200", "발전기GOV": "RHD6-MC", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-06", "선명": "SUNRISE SAMBU", "선사": "삼부해운", "장소": "강남조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-06", "선명": "YC AZALEA", "선사": "영창기업사", "장소": "우승조선", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N18AL-UV", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-09", "선명": "KEOYOUNG MASTER", "선사": "거영해운", "장소": "감만동측", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-11", "선명": "KOKA MARU", "선사": "동국상선", "장소": "부산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-DW", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-11", "선명": "HAPPY GAS", "선사": "MSSM", "장소": "KJ조선", "메인엔진": "AKASAKA A41S", "메인GOV": "UG-10L", "메인작업": "", "발전기": "DAIHATSU 6DL16A", "발전기GOV": "PSG", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-15", "선명": "632 DONGWON", "선사": "동원수산", "장소": "우리조선", "메인엔진": "AKASAKA K28", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S165L-HT", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-19", "선명": "GRACE SAMBU", "선사": "삼부해운", "장소": "SW조선", "메인엔진": "MAN 8L28/32A", "메인GOV": "UG-8L", "메인작업": "", "발전기": "CATERPILLAR 3406", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-25", "선명": "KEOYOUNG MASTER", "선사": "거영해운", "장소": "울산", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-07-26", "선명": "DONGBANG GIANT NO.9", "선사": "동방(STX)", "장소": "SINGAPORE", "메인엔진": "GDF 32G", "메인GOV": "UG-10D", "메인작업": "P", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2024-07-26", "선명": "BUENA SUERTE", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "AKASAKA A41", "메인GOV": "UG-10L", "메인작업": "UPG", "발전기": "YANMAR 6NY16L-HN", "발전기GOV": "MECH", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-08-06", "선명": "GAS OCEANROAD", "선사": "디와이마린", "장소": "강남조선", "메인엔진": "", "메인GOV": "MG-800", "메인작업": "PNG", "발전기": "YANMAR 6N165L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-08-07", "선명": "103 HYODONG CHEMI", "선사": "효동선박", "장소": "감천YS조선", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-08-10", "선명": "KEOYOUNG BLUE 3", "선사": "동국상선", "장소": "동일조선", "메인엔진": "HANSHIN LA32G", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-UW", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-08-12", "선명": "HAE JIN", "선사": "삼표해운", "장소": "마산항", "메인엔진": "MAN 6S35MC-MK6", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-UN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-08-12", "선명": "LINA", "선사": "삼표해운", "장소": "그린월드", "메인엔진": "AKASAKA 7UEC37LA", "메인GOV": "PGA-12", "메인작업": "UPG", "발전기": "YANMAR 6NY16L-SN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-08-28", "선명": "INFINITY SAMBU", "선사": "삼부해운", "장소": "동일조선", "메인엔진": "AKASAKA A38S", "메인GOV": "UG-10LP", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-09-11", "선명": "PRINCESS DAISY", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "AKASAKA A38", "메인GOV": "UG-10L", "메인작업": "UPG", "발전기": "YANMAR 6N165L-", "발전기GOV": "NZ-61", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-09-14", "선명": "GREEN GAS", "선사": "MSSM", "장소": "남외항", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-09-15", "선명": "DONGJIN NAGOYA", "선사": "동진상선", "장소": "7부두", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6HAL-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-09-19", "선명": "GOLDSTAR SHINE", "선사": "대명상선", "장소": "KJ조선", "메인엔진": "MAN 35MC", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N165L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-09-19", "선명": "SAWASDEE THAILAND", "선사": "장금상선", "장소": "신선대", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-09-19", "선명": "YU JIN", "선사": "삼표해운", "장소": "하동", "메인엔진": "MAN 5L35MC6", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-09-23", "선명": "MS CLEAN", "선사": "MSSM", "장소": "부영마린안벽", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG-10L", "메인작업": "PNG", "발전기": "YANMAR S165L-SN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-10-08", "선명": "DB SUNRISE", "선사": "동방쉽핑", "장소": "선진", "메인엔진": "MAKITA 6S26MC", "메인GOV": "", "메인작업": "", "발전기": "DAIHATSU DL16", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-10-08", "선명": "PIONEER", "선사": "대유상선", "장소": "동일조선", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "RHD6-PC", "메인작업": "", "발전기": "YANMAR 6HAL2-WHT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-10-10", "선명": "JUNG JIN", "선사": "삼표해운", "장소": "창원", "메인엔진": "MAN 6S35MC-MK6", "메인GOV": "PGA-58", "메인작업": "", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-10-13", "선명": "HAEIN HOPE", "선사": "KTM", "장소": "울산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N18(A)L-V", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-10-14", "선명": "BLUE PHOENIX", "선사": "KTM", "장소": "울산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "캔슬", "구분": "국내", "비고": ""}, {"날짜": "2024-10-15", "선명": "FOSEP", "선사": "화이브오션", "장소": "영흥화력발전소", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N18AL-EV", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-10-20", "선명": "FORTUNE JIWON", "선사": "포천마린", "장소": "대산", "메인엔진": "STX 6S35MC-MK7", "메인GOV": "", "메인작업": "", "발전기": "STX 5L16/24", "발전기GOV": "UG8D", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-11-01", "선명": "KEOYOUNG BLUE 5", "선사": "거영해운", "장소": "부산", "메인엔진": "HANSHIN LA32G", "메인GOV": "UG-10L", "메인작업": "PNG", "발전기": "YANMAR 6NY16L-HN", "발전기GOV": "PSG", "발전기작업": "", "하가일정": "", "상태": "캔슬", "구분": "국내", "비고": ""}, {"날짜": "2024-11-04", "선명": "DONGJIN FORTUNE", "선사": "동진상선", "장소": "신선대", "메인엔진": "MAN 8S35MC", "메인GOV": "PGA-58", "메인작업": "", "발전기": "YANMAR M200", "발전기GOV": "RHD6-MC", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-11-05", "선명": "21 KYUNG YANG", "선사": "경양수산", "장소": "우리조선", "메인엔진": "NIIGATA 6M28", "메인GOV": "", "메인작업": "", "발전기": "NIIGATA 6L16XC", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-11-07", "선명": "HAE JIN", "선사": "삼표해운", "장소": "감천", "메인엔진": "MAN 6S35MC-MK6", "메인GOV": "", "메인작업": "P", "발전기": "YANMAR 6NY16L-UN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-11-09", "선명": "KEOYOUNG SUN 5", "선사": "거영해운", "장소": "부산", "메인엔진": "AKASAKA A28", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6HAL2-HTN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-11-21", "선명": "KEOYOUNG DREAM 3", "선사": "거영해운", "장소": "부산", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-SW", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-11-21", "선명": "F.OCEAN", "선사": "화이브오션", "장소": "태안", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "RHD6", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-11-23", "선명": "KTS RED", "선사": "세줄선박", "장소": "울산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6HAL2-DTN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-11-25", "선명": "LAKE WIN", "선사": "지성해운", "장소": "통영", "메인엔진": "AKASAKA A38", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S185-UT", "발전기GOV": "RHD6", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-11-28", "선명": "FAITH", "선사": "대유상선", "장소": "그린월드", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "RHD6-PC", "메인작업": "", "발전기": "YANMAR 6HAL2-WHT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-12-10", "선명": "SUNNY DAISY", "선사": "TEOTEC", "장소": "여수해양", "메인엔진": "AKASAKA 6UEC45LSE-EcoB2", "메인GOV": "", "메인작업": "", "발전기": "DAIHATSU 6DE-18", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-12-24", "선명": "SANGHAI VOYAGER", "선사": "장금상선", "장소": "신선대", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2024-12-24", "선명": "KEOYOUNG STAR", "선사": "동국상선", "장소": "여수중흥부두", "메인엔진": "HANSHIN LH36LA", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-HN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-01-01", "선명": "YN BUSAN", "선사": "포천마린", "장소": "여수", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-SW", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-01-06", "선명": "ELPIS", "선사": "대유상선", "장소": "동일조선", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "RHD6-PC", "메인작업": "", "발전기": "YANMAR 6HAL2-WHT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-01-08", "선명": "KEOYOUNG BLUE 3", "선사": "동국상선", "장소": "감천", "메인엔진": "HANSHIN LA32G", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-UW", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-01-16", "선명": "BLUE PHOENIX", "선사": "KTM", "장소": "여수", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-01-20", "선명": "GAS FREEWAY", "선사": "디와이마린", "장소": "선진셔우드", "메인엔진": "MAN 5L35MC", "메인GOV": "MG-800", "메인작업": "PNG", "발전기": "YANMAR 6N165L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-01-20", "선명": "MS SALVIA", "선사": "MSSM", "장소": "KJ조선", "메인엔진": "AKASAKA 6UEC47LA", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-01-20", "선명": "109 HYODONG CHEMI", "선사": "효동선박", "장소": "KJ조선", "메인엔진": "MAN 28/32", "메인GOV": "UG-8D", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-01", "선명": "KOKA MARU", "선사": "동국상선", "장소": "울산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-DW", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-01", "선명": "DONGJIN GENIUS", "선사": "동진상선", "장소": "7부두", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6LAAL-UTN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-05", "선명": "TRITON", "선사": "로드스타마린", "장소": "부산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S165L-DN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-06", "선명": "YU JIN", "선사": "삼표해운", "장소": "부산", "메인엔진": "MAN 5L35MC6", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-17", "선명": "631 DONGWON", "선사": "동원수산", "장소": "우리조선", "메인엔진": "AKASAKA K28", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S165L-HT", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-17", "선명": "WOOJIN ELVIS", "선사": "OJS", "장소": "그린월드", "메인엔진": "MAN 6L35MC-MK6", "메인GOV": "MG-800", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-20", "선명": "SUNNY ACACIA", "선사": "TEOTEC", "장소": "한라IMS광양", "메인엔진": "AKASAKA 6UEC45LSE-EcoB2", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-21", "선명": "HAEIN HOPE", "선사": "KTM", "장소": "SINGAPORE", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N18(A)L-V", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "캔슬", "구분": "해외", "비고": ""}, {"날짜": "2025-02-21", "선명": "8 KYUNG YANG", "선사": "경양수산", "장소": "우리조선", "메인엔진": "NIIGATA 6M28", "메인GOV": "", "메인작업": "", "발전기": "NIIGATA 6L16XC", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-22", "선명": "WOOJIN PIONEER", "선사": "OJS", "장소": "군산", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR S165L-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-22", "선명": "KEOYOUNG STAR 5", "선사": "거영해운", "장소": "부산", "메인엔진": "HANSHIN LH36LA", "메인GOV": "UG-10L", "메인작업": "PNG", "발전기": "YANMAR 6NY16L-HN", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-24", "선명": "K GAS", "선사": "SJ탱커", "장소": "동일조선", "메인엔진": "AKASAKA A34S", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-26", "선명": "SAMPYO 5", "선사": "삼표해운", "장소": "목포", "메인엔진": "MAKITA 6L35MC", "메인GOV": "MG-800", "메인작업": "", "발전기": "YANMAR 6NY16L-UN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-27", "선명": "BUENA CONFIANZA", "선사": "리앤쉽핑", "장소": "우승조선", "메인엔진": "HITACHI 6S35ME", "메인GOV": "", "메인작업": "", "발전기": "DAIHATSU 6DE-18", "발전기GOV": "", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-02-28", "선명": "BUENA BANDERA", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "MAKITA 5L35MC", "메인GOV": "MG-800", "메인작업": "UPG", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-03-06", "선명": "DONGJIN NAGOYA", "선사": "동진상선", "장소": "7부두", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6HAL-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-03-07", "선명": "PRINCESS GARNET", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "MAKITA 6L35MC", "메인GOV": "MG-800", "메인작업": "UPG", "발전기": "YANMAR 6N165L-EW", "발전기GOV": "NZ-61", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-03-18", "선명": "LIEBE", "선사": "대유상선", "장소": "그린월드", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "RHD6-PC", "메인작업": "", "발전기": "YANMAR 6HAL2-WHT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-03-25", "선명": "101 HYODONG CHEMI", "선사": "효동선박", "장소": "그린월드", "메인엔진": "MAN 6S26MC", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-03-28", "선명": "DL DIAMOND", "선사": "동림탱커", "장소": "광양오리엔트", "메인엔진": "HANSHIN LH46LA", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-03-30", "선명": "NO.7 GAS", "선사": "SJ탱커", "장소": "동일조선", "메인엔진": "AKASAKA A34S", "메인GOV": "UG-8", "메인작업": "", "발전기": "DOOSAN AD126TIF", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-04-01", "선명": "DONGBANG GIANT NO.7", "선사": "동방(STX)", "장소": "ROTTERDAM", "메인엔진": "MAN 6L35MC", "메인GOV": "PGA-58", "메인작업": "PG", "발전기": "YANMAR 6EY22AL", "발전기GOV": "", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2025-04-02", "선명": "RISING SAMBU", "선사": "삼부해운", "장소": "동일조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-EW", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-04-06", "선명": "SEONGHO ACE", "선사": "성호해운", "장소": "여수", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6EY18AW", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-04-07", "선명": "KEOYOUNG BLUE 7", "선사": "거영해운", "장소": "부산", "메인엔진": "HANSHIN LH36LA", "메인GOV": "UG-10L", "메인작업": "PNG", "발전기": "YANMAR 6NY16L-HN", "발전기GOV": "PSG", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-04-08", "선명": "SHINING ROAD", "선사": "디와이마린", "장소": "선진셔우드안벽", "메인엔진": "MAN 35MC", "메인GOV": "MG-800", "메인작업": "NP", "발전기": "YANMAR 6NY16L-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-04-08", "선명": "KWANGYANG 12", "선사": "FEMS", "장소": "부산", "메인엔진": "MAN 8L28/32A", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-04-08", "선명": "DAEHO SUNNY", "선사": "HR SHIPPING", "장소": "KJ조선", "메인엔진": "MAN 6L35MC", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-04-08", "선명": "HAE JIN", "선사": "삼표해운", "장소": "부산", "메인엔진": "MAN 6S35MC-MK6", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-UN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-04-10", "선명": "PILATUS 65", "선사": "NDSM", "장소": "여수", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-04-14", "선명": "2 KYUNG YANG", "선사": "경양수산", "장소": "우리조선", "메인엔진": "NIIGATA 6M28", "메인GOV": "", "메인작업": "", "발전기": "NIIGATA 6L16XC", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-04-15", "선명": "HAEIN HOPE", "선사": "KTM", "장소": "여수해양", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N18(A)L-V", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-07", "선명": "618 DONGWON", "선사": "동원수산", "장소": "우리조선", "메인엔진": "NIIGATA 6M28", "메인GOV": "", "메인작업": "", "발전기": "NIIGATA 6L16XC", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-07", "선명": "KARA", "선사": "대유상선", "장소": "동일조선", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "RHD6-PC", "메인작업": "", "발전기": "YANMAR 6HAL2-WHT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-07", "선명": "FORTUNE JIWON", "선사": "포천마린", "장소": "그린월드", "메인엔진": "STX 6S35MC-MK7", "메인GOV": "", "메인작업": "", "발전기": "STX 5L16/24", "발전기GOV": "UG8D", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-07", "선명": "SUNFLOWER 7", "선사": "지성해운", "장소": "통영항", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR M200", "발전기GOV": "RHD6", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-07", "선명": "DONGJIN GENIUS", "선사": "동진상선", "장소": "7부두", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6LAAL-UTN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-14", "선명": "SAMPYO 1", "선사": "삼표해운", "장소": "창원항", "메인엔진": "KAWASAKI 6L36MC", "메인GOV": "PGA-58", "메인작업": "", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-15", "선명": "PACIFIC SAMBU", "선사": "삼부해운", "장소": "동일안벽", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "CATERPILLAR 3406", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-17", "선명": "SH VENUS", "선사": "성호해운", "장소": "대불조선", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6EY18LW", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-19", "선명": "LOTUS SAMBU", "선사": "삼부해운", "장소": "동일조선", "메인엔진": "HANSHIN LH46LA", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-19", "선명": "HESED", "선사": "대유상선", "장소": "묵호항", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "RHD6-PC", "메인작업": "", "발전기": "YANMAR 6HAL2-WHT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-26", "선명": "KEOYOUNG STAR", "선사": "동국상선", "장소": "동일조선", "메인엔진": "HANSHIN LH36LA", "메인GOV": "UG-10L", "메인작업": "PNG", "발전기": "YANMAR 6NY16L-HN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-27", "선명": "SUNRISE SAMBU", "선사": "삼부해운", "장소": "강남조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-28", "선명": "KTS RED", "선사": "세줄선박", "장소": "대산", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6HAL2-DTN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-29", "선명": "SH OLIVIA", "선사": "성호해운", "장소": "한라IMS광양", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6EY18LW", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-29", "선명": "ROYAL SAMBU", "선사": "삼부해운", "장소": "동일안벽", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-05-30", "선명": "DONGBANG GIANT NO.8", "선사": "동방(STX)", "장소": "QATAR", "메인엔진": "MAN 9L32/40", "메인GOV": "", "메인작업": "", "발전기": "STX 5L23/30", "발전기GOV": "UG8D", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2025-06-06", "선명": "GALAXY SAMBU", "선사": "삼부해운", "장소": "동일조선", "메인엔진": "HANSHIN LH38L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-06-08", "선명": "NO.3 GAS", "선사": "SJ탱커", "장소": "동일조선", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S165L-DN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-06-13", "선명": "KEOYOUNG BLUE 5", "선사": "거영해운", "장소": "영도선진", "메인엔진": "HANSHIN LA32G", "메인GOV": "UG-10L", "메인작업": "PNG", "발전기": "YANMAR 6NY16L-HN", "발전기GOV": "PSG", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-06-14", "선명": "CHAMPION ROAD", "선사": "디와이마린", "장소": "VIETNAM", "메인엔진": "AKASAKA 6UEC37LA", "메인GOV": "PGA-12", "메인작업": "", "발전기": "YANMAR 6NY16L-SN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2025-06-16", "선명": "JIN AN", "선사": "삼표해운", "장소": "여수해양", "메인엔진": "", "메인GOV": "RHD6-MC", "메인작업": "", "발전기": "YANMAR 6HAL2-HTN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-06-18", "선명": "GIANT SAMBU", "선사": "삼부해운", "장소": "그린월드", "메인엔진": "HANSHIN LH46LA", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-06-18", "선명": "DL RUBY", "선사": "동림탱커", "장소": "한라IMS광양", "메인엔진": "MAN 6L35MC-MK6", "메인GOV": "MG-800", "메인작업": "", "발전기": "YANMAR 6N165L-UN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-06-28", "선명": "BUENA LUNA", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "MAKITA 6L35MC", "메인GOV": "MG-800", "메인작업": "UPG", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-07-07", "선명": "MS CLEAN", "선사": "MSSM", "장소": "부영마린안벽", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG-10L", "메인작업": "PN", "발전기": "YANMAR S165L-SN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-07-16", "선명": "PRINCESS IRIS", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "AKASAKA A41", "메인GOV": "UG-10L", "메인작업": "UPG", "발전기": "YANMAR 6N165L-", "발전기GOV": "NZ-61", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-07-21", "선명": "ASIAN GRACE", "선사": "WSM", "장소": "울산7부두", "메인엔진": "HITACHI 6S35MC7", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N165L-", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-07-27", "선명": "INFINITY SAMBU", "선사": "삼부해운", "장소": "그린월드", "메인엔진": "AKASAKA A38S", "메인GOV": "UG-10LP", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-07-28", "선명": "3 KYUNG YANG", "선사": "경양수산", "장소": "우리조선", "메인엔진": "AKASAKA K28FD", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S165L-HT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-07-30", "선명": "KEOYOUNG BLUE 1", "선사": "동국상선", "장소": "부산조선", "메인엔진": "HANSHIN LA32G", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-UW", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-08-01", "선명": "BUENA AMISTAD", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "AKASAKA 5UEC33LS2", "메인GOV": "PGA-12", "메인작업": "UPG", "발전기": "YANMAR 6NY16L-UW", "발전기GOV": "MECH", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-08-02", "선명": "KEOYOUNG SEVEN", "선사": "거영해운", "장소": "부산조선", "메인엔진": "AKASAKA A34", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6HAL2-HTN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-08-05", "선명": "BUENA ESPERANZA", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "AKASAKA A41", "메인GOV": "UG-10L", "메인작업": "UPG", "발전기": "DAIHATSU 6DL-16A", "발전기GOV": "PSG", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-08-05", "선명": "CHAMPION ROAD", "선사": "디와이마린", "장소": "KJ조선", "메인엔진": "AKASAKA 6UEC37LA", "메인GOV": "PGA-12", "메인작업": "", "발전기": "YANMAR 6NY16L-SN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-08-06", "선명": "DONGBANG GIANT NO.1", "선사": "동방(훼어선박)", "장소": "VIETNAM", "메인엔진": "HANSHIN LH41L", "메인GOV": "", "메인작업": "UG", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2025-08-22", "선명": "SEA CRYSTAL", "선사": "ESM", "장소": "염포부두", "메인엔진": "STX 8S35MC-MK7", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-09-08", "선명": "BUENA ALBA", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "AKASAKA A41", "메인GOV": "UG-10L", "메인작업": "UPG", "발전기": "DAIHATSU 6DL-16A", "발전기GOV": "PSG", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-09-12", "선명": "BELIEF GAS", "선사": "MSSM", "장소": "KJ조선", "메인엔진": "AKASAKA 6UEC33LS2", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-09-17", "선명": "KEOYOUNG DREAM 3", "선사": "거영해운", "장소": "동일조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-SW", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-09-22", "선명": "HEUNG A YOUNG", "선사": "시노코", "장소": "신선대", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6EY-18", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-09-24", "선명": "BUENA REINA", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "AKASAKA A41", "메인GOV": "UG-10L", "메인작업": "UPG", "발전기": "DAIHATSU 6DL-16A", "발전기GOV": "PSG", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-10-14", "선명": "HEUNG A YOUNG", "선사": "시노코", "장소": "신선대", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6EY-18", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-10-17", "선명": "KEOYOUNG BLUE 3", "선사": "동국상선", "장소": "구평선진", "메인엔진": "HANSHIN LA32G", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-UW", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-10-17", "선명": "KTS SILVER", "선사": "세줄선박", "장소": "YS조선", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S165L-DN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-10-20", "선명": "KEOJE CORDELIA", "선사": "포천마린", "장소": "대산", "메인엔진": "STX 6S35MC-MK7", "메인GOV": "PGA-58", "메인작업": "G", "발전기": "YANMAR 6EY-18", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-10-23", "선명": "MS BLESS", "선사": "MSSM", "장소": "우성월드씨포트", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-10-23", "선명": "9 KYUNG YANG", "선사": "경양수산", "장소": "우리조선", "메인엔진": "NIIGATA 6M28", "메인GOV": "", "메인작업": "", "발전기": "NIIGATA 6L16XC", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-10-31", "선명": "WOOJIN PIONEER", "선사": "OJS", "장소": "그린월드", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR S165L-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-10-31", "선명": "MS SHARON", "선사": "MSSM", "장소": "우성월드씨포트", "메인엔진": "AKASAKA 5UEC33LS2", "메인GOV": "PGA-12", "메인작업": "", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-11-04", "선명": "PRINCESS SANGO", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "MAKITA 6L35MC6.1", "메인GOV": "MG-800", "메인작업": "UPG", "발전기": "YANMAR 6N165L-EW", "발전기GOV": "NZ-61", "발전기작업": "PG", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-11-07", "선명": "DONGJIN FORTUNE", "선사": "동진상선", "장소": "신선대", "메인엔진": "MAN 8S35MC", "메인GOV": "PGA-58", "메인작업": "", "발전기": "YANMAR M200", "발전기GOV": "RHD6-MC", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-11-10", "선명": "HEUNG A YOUNG", "선사": "시노코", "장소": "신선대", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6EY-18", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-11-11", "선명": "5 KYUNG YANG", "선사": "경양수산", "장소": "우리조선", "메인엔진": "HANSHIN LH28 LUN", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S165L-HT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-11-11", "선명": "PILLOS 1", "선사": "KS선박", "장소": "마스텍", "메인엔진": "KAWASAKI 6S26MC", "메인GOV": "", "메인작업": "", "발전기": "YANMAR S165L-HT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-11-13", "선명": "SUNNY ORION", "선사": "아사히탱커", "장소": "정일부두", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-11-13", "선명": "KTS GOLD", "선사": "세줄선박", "장소": "KJ조선", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-11-13", "선명": "619 DONGWON", "선사": "동원수산", "장소": "우리조선", "메인엔진": "NIIGATA 6M28", "메인GOV": "RHD6", "메인작업": "", "발전기": "NIIGATA 6L16XC", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-11-24", "선명": "BEGONIA", "선사": "OJS", "장소": "그린월드조선", "메인엔진": "MAN 6S35MC7", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-12-01", "선명": "DONGBANG GIANT NO.3", "선사": "동방(STX)", "장소": "DUBAI", "메인엔진": "MAN 7L32/40", "메인GOV": "", "메인작업": "P", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2025-12-12", "선명": "SKY RUNNER", "선사": "KTM", "장소": "ZHOUSHAN", "메인엔진": "STX 6S35MC-MK7", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6EY-18", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2025-12-15", "선명": "KEOYOUNG DREAM 3", "선사": "거영해운", "장소": "동일조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-SW", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-12-22", "선명": "YU JIN", "선사": "삼표해운", "장소": "부산", "메인엔진": "MAN 5L35MC6", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-12-22", "선명": "SH GRACE", "선사": "BK", "장소": "마스텍", "메인엔진": "HANSHIN LH34LA", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6HAL2-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-12-29", "선명": "FORTUNE YOUNGIN", "선사": "포천마린", "장소": "그린월드", "메인엔진": "STX 6S35MC-MK7", "메인GOV": "MG-800", "메인작업": "", "발전기": "STX 5L16/24", "발전기GOV": "UG8D", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2025-12-29", "선명": "GREEN GAS", "선사": "MSSM", "장소": "동일조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-01-02", "선명": "RISING SAMBU", "선사": "삼부해운", "장소": "동일조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-EW", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-01-02", "선명": "LIEBE", "선사": "대유상선", "장소": "광양제품부두", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "RHD6-PC", "메인작업": "", "발전기": "YANMAR 6HAL2-WHT", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-01-02", "선명": "KEOYOUNG STAR 3", "선사": "거영해운", "장소": "동일조선", "메인엔진": "HANSHIN LA32G", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-01-03", "선명": "ROYAL SAMBU", "선사": "삼부해운", "장소": "그린월드", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-01-05", "선명": "DONGBANG GIANT NO.5", "선사": "동방(훼어선박)", "장소": "BATAM", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-UN", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2026-01-12", "선명": "FC ADONIS", "선사": "포천마린", "장소": "삼우", "메인엔진": "STX 6S35MC-MK7", "메인GOV": "", "메인작업": "", "발전기": "STX 5L23/30", "발전기GOV": "UG8D", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-01-16", "선명": "KEOYOUNG SEVEN", "선사": "거영해운", "장소": "부산조선", "메인엔진": "AKASAKA A34", "메인GOV": "", "메인작업": "PGN", "발전기": "YANMAR 6HAL2-HTN", "발전기GOV": "MECH", "발전기작업": "PN", "하가일정": "2026-02-02", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-01-17", "선명": "DONGBANG GIANT NO.6", "선사": "동방(STX)", "장소": "마산항", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG", "메인작업": "", "발전기": "YANMAR 6EY18LW", "발전기GOV": "", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-02-04", "선명": "LAKE NOVA", "선사": "지성해운", "장소": "마산항", "메인엔진": "AKASAKA 6UEC45LA", "메인GOV": "PGA-58", "메인작업": "UG", "발전기": "YANMAR M200L-SN", "발전기GOV": "RHD6", "발전기작업": "", "하가일정": "2026-03-01", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-02-05", "선명": "RIBIGH SUNSHINE", "선사": "리앤쉽핑", "장소": "대불조선", "메인엔진": "MAN 7L42MC6", "메인GOV": "MG-800", "메인작업": "UPG", "발전기": "YANMAR 6N18AL", "발전기GOV": "NZ-61", "발전기작업": "PG", "하가일정": "2026-03-03", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-02-10", "선명": "632 DONGWON", "선사": "동원수산", "장소": "우리조선", "메인엔진": "AKASAKA K28", "메인GOV": "", "메인작업": "GN", "발전기": "YANMAR S165L-HT", "발전기GOV": "MECH", "발전기작업": "PN", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-02-28", "선명": "623 DONGWON", "선사": "동원수산", "장소": "우리조선", "메인엔진": "AKASAKA K28", "메인GOV": "RHD6", "메인작업": "GN", "발전기": "YANMAR S165L-HT", "발전기GOV": "MECH", "발전기작업": "PN", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-03-03", "선명": "SAMPYO 5", "선사": "삼표해운", "장소": "광양", "메인엔진": "MAKITA 6L35MC", "메인GOV": "MG-800", "메인작업": "PG", "발전기": "YANMAR 6NY16L-UN", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-03-08", "선명": "ASIAN NAGA", "선사": "K&J", "장소": "SANWA", "메인엔진": "HANSHIN 6S35MC", "메인GOV": "MG-800", "메인작업": "UG", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2026-03-10", "선명": "YN OCEAN", "선사": "포천마린", "장소": "KJ조선", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG-10LP", "메인작업": "G", "발전기": "YANMAR 6N165L-SW", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "2026-03-22", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-03-16", "선명": "DL DIAMOND", "선사": "동림탱커", "장소": "부영마린안벽", "메인엔진": "HANSHIN LH46LA", "메인GOV": "UG-10L", "메인작업": "GN", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "PGN", "하가일정": "2026-03-18", "상태": "완료", "구분": "국내", "비고": "NO.1 G/E"}, {"날짜": "2026-03-17", "선명": "DL RUBY", "선사": "동림탱커", "장소": "KTI부두", "메인엔진": "MAN 6L35MC-MK6", "메인GOV": "MG-800", "메인작업": "P", "발전기": "YANMAR 6N165L-UN", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "2026-03-18", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-03-20", "선명": "ARO LAKE", "선사": "포천마린", "장소": "염포부두", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG-10L", "메인작업": "PG", "발전기": "STX 5L16/24", "발전기GOV": "UG8D", "발전기작업": "PG", "하가일정": "2026-03-21", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-03-20", "선명": "AKATSUKI MARU", "선사": "아사히탱커", "장소": "여수해양", "메인엔진": "MAN 6S50MC", "메인GOV": "MG-800", "메인작업": "P", "발전기": "YANMAR 6N21AL-EV", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "2026-03-30", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-03-22", "선명": "PHOS", "선사": "대유상선", "장소": "동일조선", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "RHD6-PC", "메인작업": "G", "발전기": "YANMAR 6HAL2-WHT", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "2026-04-04", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-03-23", "선명": "SJ HOPE", "선사": "SJ탱커", "장소": "부영마린안벽", "메인엔진": "MAN 6L35MC", "메인GOV": "PGA-58", "메인작업": "P", "발전기": "NIIGATA 6NSD", "발전기GOV": "NZ-61", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": "M/E NO.2 CYL' PUMP & REVERSING G/E NO.3 LINKAGE 조절"}, {"날짜": "2026-03-26", "선명": "SAMPYO 1", "선사": "삼표해운", "장소": "그린월드", "메인엔진": "KAWASAKI 6L36MC", "메인GOV": "PGA-58", "메인작업": "UPG", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "2026-04-04", "상태": "완료", "구분": "국내", "비고": "M/E PUMP 6SET REVERSING 6SET M/E GOVERNOR"}, {"날짜": "2026-04-01", "선명": "S FREDDIE", "선사": "STXACE", "장소": "부산항7부두", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "완료", "구분": "국내", "비고": "NO.2 G/E C/B"}, {"날짜": "2026-04-04", "선명": "DONGBANG GIANT NO.2", "선사": "동방(훼어선박)", "장소": "BATAM", "메인엔진": "AKASAKA AX33", "메인GOV": "UG-10L", "메인작업": "G", "발전기": "YANMAR 6NY16L-UN", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "2026-04-14", "상태": "완료", "구분": "해외", "비고": ""}, {"날짜": "2026-04-05", "선명": "DONGJIN VENUS", "선사": "동진상선", "장소": "인천", "메인엔진": "MAN 6S46MC", "메인GOV": "", "메인작업": "P", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "완료", "구분": "국내", "비고": "M/E PUMP 4SET"}, {"날짜": "2026-04-06", "선명": "FC GLORIA", "선사": "포천마린", "장소": "대불조선", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG-10L", "메인작업": "G", "발전기": "YANMAR 6N165L-UN", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "2026-04-15", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-04-09", "선명": "NO.8 GAS", "선사": "SJ탱커", "장소": "울산", "메인엔진": "DAIHATSU 8DKM-28E", "메인GOV": "UG-10L", "메인작업": "", "발전기": "", "발전기GOV": "", "발전기작업": "", "하가일정": "", "상태": "캔슬", "구분": "국내", "비고": "M/E TIMMING GOV' CHECK"}, {"날짜": "2026-04-10", "선명": "HESED", "선사": "대유상선", "장소": "그린월드", "메인엔진": "NIIGATA 6M34BGT", "메인GOV": "RHD6-PC", "메인작업": "G", "발전기": "YANMAR 6HAL2-WHT", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-04-13", "선명": "PRINCESS CRYSTAL", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "MAKITA 5L35MC6", "메인GOV": "MG-800", "메인작업": "UPG", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "PG", "하가일정": "2026-05-01", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-04-17", "선명": "MS ZINNIA", "선사": "MSSM", "장소": "KJ조선", "메인엔진": "AKASAKA 6UEC37LA", "메인GOV": "PGA-12", "메인작업": "G", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-04-20", "선명": "FORTUNE KAREN", "선사": "포천마린", "장소": "그린월드", "메인엔진": "STX 6S35MC-MK7", "메인GOV": "MG-800", "메인작업": "", "발전기": "STX 5L16/24", "발전기GOV": "UG8D", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-04-21", "선명": "DL AMBER", "선사": "동림탱커", "장소": "한라IMS부산", "메인엔진": "MAN 6S35MC-MK6", "메인GOV": "MG-800", "메인작업": "P", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-04-23", "선명": "YN YEOSU", "선사": "BS쉬핑", "장소": "KJ조선", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG-10L", "메인작업": "G", "발전기": "YANMAR 6N165L-SW", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-04-24", "선명": "JUNG JIN", "선사": "삼표해운", "장소": "여수해양", "메인엔진": "MAN 6S35MC-MK6", "메인GOV": "PGA-58", "메인작업": "P", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-04-27", "선명": "BELIEF GAS", "선사": "MSSM", "장소": "KJ조선", "메인엔진": "AKASAKA 6UEC33LS2", "메인GOV": "PGA-12", "메인작업": "G", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-05-04", "선명": "LOTUS SAMBU", "선사": "삼부해운", "장소": "그린월드", "메인엔진": "HANSHIN LH46LA", "메인GOV": "UG-10L", "메인작업": "G", "발전기": "YANMAR 6N165L-EN", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "2026-05-13", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-05-04", "선명": "PACIFIC SAMBU", "선사": "삼부해운", "장소": "강남조선", "메인엔진": "HANSHIN LH41L", "메인GOV": "UG-10L", "메인작업": "G", "발전기": "CATERPILLAR 3406", "발전기GOV": "", "발전기작업": "", "하가일정": "2026-05-12", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-05-05", "선명": "SUN EASTERN", "선사": "STXACE", "장소": "인천", "메인엔진": "MAN 7S26MC", "메인GOV": "", "메인작업": "", "발전기": "NIIGATA 6NSD", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "완료", "구분": "국내", "비고": "NO.2 G/E C/B"}, {"날짜": "2026-05-07", "선명": "KEOYOUNG BLUE 1", "선사": "동국상선", "장소": "영도선진", "메인엔진": "HANSHIN LA32G", "메인GOV": "UG-10L", "메인작업": "PGN", "발전기": "YANMAR 6NY16L-UW", "발전기GOV": "MECH", "발전기작업": "PGN", "하가일정": "2026-05-13", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-05-14", "선명": "DL LILY", "선사": "비와이쉬핑", "장소": "그린월드", "메인엔진": "AKASAKA 6UEC33LS2", "메인GOV": "PGA-12", "메인작업": "G", "발전기": "YANMAR 6N165L-", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "2026-05-22", "상태": "완료", "구분": "국내", "비고": ""}, {"날짜": "2026-05-19", "선명": "S MERCURY", "선사": "STXACE", "장소": "광양제품부두", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6NY16L-DN", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "2026-05-19", "상태": "완료", "구분": "국내", "비고": "NO.1 G/E C/B"}, {"날짜": "2026-05-23", "선명": "KTS BROWN", "선사": "세줄선박", "장소": "한라IMS광양", "메인엔진": "STX 6S35MC-MK7", "메인GOV": "PGA-58", "메인작업": "", "발전기": "YANMAR 6N18L-EV", "발전기GOV": "NZ-61", "발전기작업": "G", "하가일정": "2026-06-02", "상태": "완료", "구분": "국내", "비고": "NO.1 &2.3 G/E"}, {"날짜": "2026-05-20", "선명": "RICSEA", "선사": "화이브오션", "장소": "광양", "메인엔진": "STX 6S60MC-C", "메인GOV": "MG-800", "메인작업": "", "발전기": "MAN 6L23/30", "발전기GOV": "UG8D", "발전기작업": "G", "하가일정": "2026-05-23", "상태": "완료", "구분": "국내", "비고": "NO.1 &2.3 G/E"}, {"날짜": "2026-05-20", "선명": "CRANE LYRA", "선사": "동국상선", "장소": "부산외항", "메인엔진": "MAKITA 5L35MC6.1", "메인GOV": "MG-800", "메인작업": "", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "2026-05-20", "상태": "완료", "구분": "국내", "비고": "NO.3 G/E C/B"}, {"날짜": "2026-05-21", "선명": "308 HYODONG CHEMI", "선사": "효동선박", "장소": "부산거청", "메인엔진": "HANSHIN LH41LA", "메인GOV": "UG-10L", "메인작업": "P", "발전기": "YANMAR 6NY16L-SW", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "2026-05-27", "상태": "완료", "구분": "국내", "비고": "NO.2 G/E"}, {"날짜": "2026-06-15", "선명": "KEOYOUNG BLUE 7", "선사": "거영해운", "장소": "동일안벽", "메인엔진": "HANSHIN LH36LA", "메인GOV": "UG-10L", "메인작업": "PNG", "발전기": "YANMAR 6NY16L-HN", "발전기GOV": "PSG", "발전기작업": "PN", "하가일정": "2026-06-19", "상태": "예정", "구분": "국내", "비고": ""}, {"날짜": "2026-06-06", "선명": "GRACE SAMBU", "선사": "삼부해운", "장소": "SW조선", "메인엔진": "MAN 8L28/32A", "메인GOV": "UG-8L", "메인작업": "G", "발전기": "CATERPILLAR 3406", "발전기GOV": "", "발전기작업": "", "하가일정": "2026-06-12", "상태": "예정", "구분": "국내", "비고": ""}, {"날짜": "2026-06-30", "선명": "FC GRACE", "선사": "포천마린", "장소": "대불조선", "메인엔진": "HANSHIN LH46L", "메인GOV": "UG-10L", "메인작업": "", "발전기": "YANMAR 6N165L-UN", "발전기GOV": "NZ-61", "발전기작업": "p", "하가일정": "2026-04-15", "상태": "예정", "구분": "국내", "비고": ""}, {"날짜": "2026-06-15", "선명": "AKANE", "선사": "아사히탱커", "장소": "한라IMS부산", "메인엔진": "HITACHI 6S50MC-C7", "메인GOV": "", "메인작업": "P", "발전기": "DAIHATSU 6DK20", "발전기GOV": "RHD6-MC", "발전기작업": "G", "하가일정": "2026-06-30", "상태": "예정", "구분": "국내", "비고": ""}, {"날짜": "2026-07-30", "선명": "BUENA FORTUNA", "선사": "리앤쉽핑", "장소": "KJ조선", "메인엔진": "AKASAKA A41", "메인GOV": "UG-10L", "메인작업": "UPG", "발전기": "DAIHATSU DL-16Ae", "발전기GOV": "PSG", "발전기작업": "PG", "하가일정": "", "상태": "예정", "구분": "국내", "비고": ""}, {"날짜": "2026-06-02", "선명": "KOKA MARU", "선사": "동국상선", "장소": "YS조선", "메인엔진": "", "메인GOV": "", "메인작업": "", "발전기": "YANMAR 6NY16L-DW", "발전기GOV": "MECH", "발전기작업": "P", "하가일정": "", "상태": "예정", "구분": "국내", "비고": "NO.2 G/E C/B"}]
 ;
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
-}
-
-function setSyncDot(state) {
-  const d = document.getElementById('syncDot');
-  d.className = 'sync-dot' + (state==='ok'?'':state==='loading'?' loading':' error');
-}
-
-// Firestore 실시간 리스너
-let fbData = [];
-const q = query(collection(db, 'schedules'), orderBy('createdAt', 'desc'));
-onSnapshot(q, (snap) => {
-  fbData = snap.docs.map(d => ({...d.data(), _fbId: d.id, _added: true}));
-  setSyncDot('ok');
-  buildAll();
-  buildOpts();
-  document.getElementById('totalBadge').textContent = ALL_DATA.length.toLocaleString();
-  applyFilters();
-}, (err) => {
-  setSyncDot('error');
-  console.error(err);
-});
-
-// BASE_DATA에 uid 부여
+// 기존 엑셀에 고유 uid 부여
 const BASE_WITH_ID = BASE_DATA.map((d,i)=>({...d, _uid:'base_'+i}));
 
-// 로컬 삭제 목록 (BASE_DATA 삭제용)
-// 삭제된 기존 엑셀 항목 ID를 Firebase에 저장/동기화
-let deletedSet = new Set();
-const deletedDocRef = doc(db, 'meta', 'deleted_ids');
-
-// 삭제 목록 실시간 동기화
-import("https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js").then(({onSnapshot: _on, doc: _doc, setDoc: _set})=>{
-  _on(_doc(db,'meta','deleted_ids'), (snap)=>{
-    if(snap.exists()){
-      deletedSet = new Set(snap.data().ids||[]);
-    } else {
-      deletedSet = new Set();
-    }
-    buildAll(); buildOpts();
-    document.getElementById('totalBadge').textContent = ALL_DATA.length.toLocaleString();
-    applyFilters();
-  });
-});
-
-async function saveDeletedFb(set){
-  try{
-    const {setDoc, doc: _doc} = await import("https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js");
-    await setDoc(_doc(db,'meta','deleted_ids'), {ids:[...set]});
-  }catch(e){console.error(e);}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function setSyncDot(s){
+  document.getElementById('syncDot').className='sync-dot'+(s==='ok'?'':s==='loading'?' loading':' error');
 }
 
-function loadDeleted(){ return deletedSet; }
-function saveDeleted(s){ deletedSet=s; saveDeletedFb(s); }
+// Firebase schedules 실시간
+onSnapshot(query(collection(db,'schedules'),orderBy('createdAt','desc')), snap=>{
+  fbSchedules = snap.docs.map(d=>({...d.data(), _fbId:d.id}));
+  refresh();
+}, e=>{ setSyncDot('error'); console.error(e); });
 
-function buildAll() {
-  const deleted = loadDeleted();
-  const base = BASE_WITH_ID.filter(d=>!deleted.has(d._uid));
-  ALL_DATA = [...fbData, ...base];
+// Firebase 삭제 목록 실시간 (기존 엑셀 숨김용)
+onSnapshot(doc(db,'meta','deleted_ids'), snap=>{
+  deletedIds = snap.exists() ? new Set(snap.data().ids||[]) : new Set();
+  refresh();
+}, ()=>{ deletedIds=new Set(); refresh(); });
+
+function refresh(){
+  setSyncDot('ok');
+  // Firebase에 수정본이 있는 기존 엑셀 항목은 숨김
+  const base = BASE_WITH_ID.filter(d=>!deletedIds.has(d._uid));
+  ALL_DATA = [...fbSchedules, ...base];
+  document.getElementById('totalBadge').textContent = ALL_DATA.length.toLocaleString();
+  buildOpts();
+  applyFilters();
 }
 
-function buildOpts() {
+function buildOpts(){
   ['상태','구분','메인GOV','발전기GOV'].forEach(k=>{
     const cnt={};
     ALL_DATA.forEach(d=>{const v=d[k];if(v)cnt[v]=(cnt[v]||0)+1;});
@@ -462,10 +326,10 @@ function buildOpts() {
   });
 }
 
-function init() {
+function init(){
   setSyncDot('loading');
-  document.getElementById('f_날짜').value = new Date().toISOString().split('T')[0];
-  const inp = document.getElementById('searchInput');
+  document.getElementById('a_날짜').value = new Date().toISOString().split('T')[0];
+  const inp=document.getElementById('searchInput');
   inp.addEventListener('input',()=>{
     document.getElementById('clearBtn').style.display=inp.value?'block':'none';
     page=1; applyFilters();
@@ -496,12 +360,12 @@ function applyFilters(){
 }
 
 function updateChips(){
-  const hasFilter=sel.상태.size||sel.구분.size||sel.메인GOV.size||sel.발전기GOV.size;
-  document.getElementById('filterDot').className='dot'+(hasFilter?' on':'');
-  const labels={상태:'상태',구분:'국내/해외',메인GOV:'메인GOV',발전기GOV:'발전기GOV'};
+  const has=sel.상태.size||sel.구분.size||sel.메인GOV.size||sel.발전기GOV.size;
+  document.getElementById('filterDot').className='dot'+(has?' on':'');
+  const lb={상태:'상태',구분:'국내/해외',메인GOV:'메인GOV',발전기GOV:'발전기GOV'};
   ['상태','구분','메인GOV','발전기GOV'].forEach(k=>{
     const btn=document.querySelector(`.chip[onclick="openPanel('${k}')"]`);
-    if(btn){btn.className='chip'+(sel[k].size?' active':'');btn.textContent=sel[k].size?labels[k]+' '+sel[k].size:labels[k];}
+    if(btn){btn.className='chip'+(sel[k].size?' active':'');btn.textContent=sel[k].size?lb[k]+' '+sel[k].size:lb[k];}
   });
 }
 
@@ -516,9 +380,6 @@ function renderList(){
   const start=(page-1)*PAGE, end=Math.min(start+PAGE,total);
   listEl.innerHTML=filtered.slice(start,end).map((d,i)=>{
     const sClass='s-'+(d.상태||'');
-    const newClass=d._added?' is-new':'';
-    const uid=d._fbId||d._uid||'';
-    const isFb=!!d._fbId;
     const overseasTag=d.구분==='해외'?`<span class="tag t-overseas">🌐 해외</span>`:'';
     const hagaTag=d.하가일정?`<span class="tag t-haga">📋 하가 ${d.하가일정}</span>`:'';
     let mainSec='';
@@ -538,12 +399,14 @@ function renderList(){
       </div></div>`;
     }
     const noteBox=d.비고?`<div class="note-box"><span class="note-icon">📝</span><span class="note-text">${d.비고}</span></div>`:'';
-    return `<div class="card${newClass}">
+    return `<div class="card">
       <div class="card-top">
         <span class="ship-name">${d.선명||'-'}</span>
         <span class="status-badge ${sClass}">${d.상태||'-'}</span>
-        <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
-        <button class="del-btn" onclick="deleteItem('${uid}',${isFb},'${(d.선명||'').replace(/'/g,"\\'")}')">🗑</button>
+        <div class="card-btns">
+          <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
+          <button class="del-btn" onclick="deleteItem(${start+i})">🗑</button>
+        </div>
       </div>
       <div class="card-meta">
         <span class="card-date">📅 ${d.날짜||'-'}</span>
@@ -567,33 +430,69 @@ function renderList(){
 
 function goPage(dir){page+=dir;renderList();}
 
+// 필터 패널
 function openPanel(type){
   currentPanel=type;
-  const labels={상태:'상태 선택',구분:'국내/해외 선택',메인GOV:'메인 GOV 선택',발전기GOV:'발전기 GOV 선택'};
-  document.getElementById('panelTitle').textContent=labels[type]||type;
+  const lb={상태:'상태 선택',구분:'국내/해외 선택',메인GOV:'메인 GOV 선택',발전기GOV:'발전기 GOV 선택'};
+  document.getElementById('panelTitle').textContent=lb[type]||type;
   document.getElementById('panelBody').innerHTML=`<div style="padding:8px 0"><div class="check-grid">${(OPTS[type]||[]).map(([v,c])=>`
     <button class="check-chip${sel[type].has(v)?' active':''}" onclick="toggleSel('${type}','${v}',this)">
-      ${v} <span class="cnt">${c}</span>
+      ${v}<span class="cnt"> ${c}</span>
     </button>`).join('')}</div></div>`;
   document.getElementById('overlay').classList.add('open');
   requestAnimationFrame(()=>document.getElementById('panel').classList.add('open'));
 }
 function closePanel(){document.getElementById('overlay').classList.remove('open');document.getElementById('panel').classList.remove('open');}
 function toggleSel(type,val,el){sel[type].has(val)?(sel[type].delete(val),el.classList.remove('active')):(sel[type].add(val),el.classList.add('active'));}
-function resetCurrent(){if(currentPanel&&sel[currentPanel]){sel[currentPanel].clear();document.querySelectorAll('.check-chip.active').forEach(el=>el.classList.remove('active'));}}
+function resetCurrent(){if(currentPanel){sel[currentPanel].clear();document.querySelectorAll('.check-chip.active').forEach(e=>e.classList.remove('active'));}}
 function applyAndClose(){closePanel();applyFilters();}
 
-// 수정 모달
-let editData = null;
-function openEditByIdx(idx) {
-  const d = filtered[idx];
-  if(!d) return;
-  editData = d;
-  document.getElementById('e_uid').value = d._fbId || d._uid || '';
-  document.getElementById('e_isFb').value = !!d._fbId;
+// 추가
+function openAddModal(){
+  document.getElementById('addOverlay').classList.add('open');
+  requestAnimationFrame(()=>document.getElementById('addModal').classList.add('open'));
+}
+function closeAddModal(){
+  document.getElementById('addOverlay').classList.remove('open');
+  document.getElementById('addModal').classList.remove('open');
+}
+function ga(id){return document.getElementById(id).value.trim();}
+
+async function submitAdd(){
+  const 날짜=ga('a_날짜'), 선명=ga('a_선명');
+  if(!날짜||!선명){alert('날짜와 선명은 필수입니다.');return;}
+  const btn=document.getElementById('addSubmitBtn');
+  btn.textContent='저장 중...'; btn.disabled=true;
+  try{
+    await addDoc(collection(db,'schedules'),{
+      날짜, 선명, 선사:ga('a_선사'), 장소:ga('a_장소'),
+      구분:ga('a_구분')||'국내', 상태:ga('a_상태')||'예정',
+      메인엔진:ga('a_메인엔진'), 메인GOV:ga('a_메인GOV'), 메인작업:ga('a_메인작업'),
+      발전기:ga('a_발전기'), 발전기GOV:ga('a_발전기GOV'), 발전기작업:ga('a_발전기작업'),
+      하가일정:ga('a_하가일정'), 비고:ga('a_비고'),
+      createdAt: new Date().toISOString()
+    });
+    ['선명','선사','장소','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','비고'].forEach(k=>{
+      document.getElementById('a_'+k).value='';
+    });
+    document.getElementById('a_상태').value='예정';
+    document.getElementById('a_구분').value='국내';
+    document.getElementById('a_날짜').value=new Date().toISOString().split('T')[0];
+    document.getElementById('a_하가일정').value='';
+    closeAddModal();
+    showToast(`✅ "${선명}" 추가됐습니다!`);
+  }catch(e){alert('저장 실패: '+e.message);}
+  btn.textContent='✅ 일정 추가'; btn.disabled=false;
+}
+
+// 수정
+function openEditByIdx(idx){
+  const d=filtered[idx];
+  if(!d)return;
+  window._editIdx=idx;
   ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','비고'].forEach(k=>{
     const el=document.getElementById('e_'+k);
-    if(el) el.value = d[k]||'';
+    if(el) el.value=d[k]||'';
   });
   document.getElementById('editOverlay').classList.add('open');
   requestAnimationFrame(()=>document.getElementById('editModal').classList.add('open'));
@@ -605,143 +504,62 @@ function closeEditModal(){
 function ge(id){return document.getElementById(id).value.trim();}
 
 async function submitEdit(){
-  const uid = document.getElementById('e_uid').value;
-  const isFb = document.getElementById('e_isFb').value === 'true';
-  const 날짜 = ge('e_날짜'), 선명 = ge('e_선명');
+  const d=filtered[window._editIdx];
+  if(!d)return;
+  const 날짜=ge('e_날짜'), 선명=ge('e_선명');
   if(!날짜||!선명){alert('날짜와 선명은 필수입니다.');return;}
-  const updated = {
+  const updated={
     날짜, 선명, 선사:ge('e_선사'), 장소:ge('e_장소'),
     구분:ge('e_구분')||'국내', 상태:ge('e_상태')||'예정',
     메인엔진:ge('e_메인엔진'), 메인GOV:ge('e_메인GOV'), 메인작업:ge('e_메인작업'),
     발전기:ge('e_발전기'), 발전기GOV:ge('e_발전기GOV'), 발전기작업:ge('e_발전기작업'),
     하가일정:ge('e_하가일정'), 비고:ge('e_비고'),
   };
-  const btn = document.getElementById('editSubmitBtn');
+  const btn=document.getElementById('editSubmitBtn');
   btn.textContent='저장 중...'; btn.disabled=true;
-  try {
-    if(isFb) {
-      const {updateDoc, doc: fsDoc} = await import("https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js");
-      await updateDoc(fsDoc(db,'schedules',uid), updated);
+  try{
+    if(d._fbId){
+      // Firebase 항목 직접 수정
+      await updateDoc(doc(db,'schedules',d._fbId), updated);
     } else {
-      // 기존 엑셀 데이터 수정 → Firebase에 새로 저장 + 기존 삭제처리
-      const deleted = loadDeleted();
-      deleted.add(uid);
-      saveDeleted(deleted);
-      await addDoc(collection(db,'schedules'), {...updated, createdAt: new Date().toISOString()});
+      // 기존 엑셀 항목 → Firebase에 새로 저장 + 원본 숨김
+      const newDeleted=new Set(deletedIds);
+      newDeleted.add(d._uid);
+      await Promise.all([
+        addDoc(collection(db,'schedules'),{...updated, createdAt:new Date().toISOString()}),
+        setDoc(doc(db,'meta','deleted_ids'),{ids:[...newDeleted]})
+      ]);
     }
     closeEditModal();
     showToast(`✅ "${선명}" 수정됐습니다!`);
-  } catch(e){ alert('수정 실패: '+e.message); }
+  }catch(e){alert('수정 실패: '+e.message);}
   btn.textContent='💾 수정 저장'; btn.disabled=false;
 }
 
-window.openEditByIdx=openEditByIdx; window.closeEditModal=closeEditModal; window.submitEdit=submitEdit;
-
-function openAddModal(){
-  document.getElementById('modalOverlay').classList.add('open');
-  requestAnimationFrame(()=>document.getElementById('addModal').classList.add('open'));
-}
-function closeAddModal(){
-  document.getElementById('modalOverlay').classList.remove('open');
-  document.getElementById('addModal').classList.remove('open');
-}
-function g(id){return document.getElementById(id).value.trim();}
-
-async function submitAdd(){
-  const 날짜=g('f_날짜'), 선명=g('f_선명');
-  if(!날짜||!선명){alert('날짜와 선명은 필수입니다.');return;}
-  const btn=document.querySelector('.btn-submit');
-  btn.textContent='저장 중...'; btn.disabled=true;
-  try {
-    await addDoc(collection(db,'schedules'),{
-      날짜, 선명, 선사:g('f_선사'), 장소:g('f_장소'),
-      구분:g('f_구분')||'국내', 상태:g('f_상태')||'예정',
-      메인엔진:g('f_메인엔진'), 메인GOV:g('f_메인GOV'), 메인작업:g('f_메인작업'),
-      발전기:g('f_발전기'), 발전기GOV:g('f_발전기GOV'), 발전기작업:g('f_발전기작업'),
-      하가일정:g('f_하가일정'), 비고:g('f_비고'),
-      createdAt: new Date().toISOString()
-    });
-    ['f_선명','f_선사','f_장소','f_메인엔진','f_메인GOV','f_메인작업','f_발전기','f_발전기GOV','f_발전기작업','f_하가일정','f_비고'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('f_상태').value='예정';
-    document.getElementById('f_구분').value='국내';
-    document.getElementById('f_날짜').value=new Date().toISOString().split('T')[0];
-    closeAddModal();
-    showToast(`✅ "${선명}" 추가됐습니다!`);
-  } catch(e) {
-    alert('저장 실패: '+e.message);
-  }
-  btn.textContent='✅ 일정 추가'; btn.disabled=false;
-}
-
-async function deleteItem(uid, isFb, shipName){
-  if(!confirm(`"${shipName}" 일정을 삭제할까요?`)) return;
-  if(isFb){
-    try {
-      await deleteDoc(doc(db,'schedules',uid));
-      showToast('🗑 삭제됐습니다');
-    } catch(e){ alert('삭제 실패: '+e.message); }
-  } else {
-    const deleted=loadDeleted();
-    deleted.add(uid);
-    saveDeleted(deleted);
-    buildAll(); buildOpts();
-    document.getElementById('totalBadge').textContent=ALL_DATA.length.toLocaleString();
-    applyFilters();
+// 삭제
+async function deleteItem(idx){
+  const d=filtered[idx];
+  if(!d)return;
+  if(!confirm(`"${d.선명||'-'}" 일정을 삭제할까요?`))return;
+  try{
+    if(d._fbId){
+      await deleteDoc(doc(db,'schedules',d._fbId));
+    } else {
+      const newDeleted=new Set(deletedIds);
+      newDeleted.add(d._uid);
+      await setDoc(doc(db,'meta','deleted_ids'),{ids:[...newDeleted]});
+    }
     showToast('🗑 삭제됐습니다');
-  }
+  }catch(e){alert('삭제 실패: '+e.message);}
 }
 
 // 전역 노출
 window.openPanel=openPanel; window.closePanel=closePanel;
 window.toggleSel=toggleSel; window.resetCurrent=resetCurrent; window.applyAndClose=applyAndClose;
-window.goPage=goPage; window.clearSearch=clearSearch;
-window.exportExcel = exportExcel;
-function exportExcel(){
-  showToast('📥 엑셀 준비 중...');
-  // SheetJS CDN 동적 로드
-  if(window.XLSX){
-    _doExport();
-  } else {
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-    s.onload=_doExport;
-    document.head.appendChild(s);
-  }
-}
-function _doExport(){
-  // 원본 엑셀과 동일한 컬럼 순서
-  const colMap = [
-    {key:'날짜',        label:'날짜'},
-    {key:'선명',        label:'선명'},
-    {key:'선사',        label:'선사'},
-    {key:'장소',        label:'조선소/장소'},
-    {key:'메인엔진',    label:'메인엔진 모델'},
-    {key:'메인GOV',     label:'메인GOV'},
-    {key:'메인작업',    label:'메인  작업'},
-    {key:'발전기',      label:'발전기 모델'},
-    {key:'발전기GOV',   label:'발전기 GOV'},
-    {key:'발전기작업',  label:'발전기작업'},
-    {key:'하가일정',    label:'하가일정'},
-    {key:'상태',        label:'상태'},
-    {key:'구분',        label:'국내/해외'},
-    {key:'비고',        label:'비고'},
-  ];
-  const rows = [colMap.map(c=>c.label)];
-  ALL_DATA.forEach(d=>{
-    rows.push(colMap.map(c=>d[c.key]||''));
-  });
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [12,16,10,14,16,10,10,18,10,10,12,6,8,20].map(w=>({wch:w}));
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, '작업스케줄');
-  const today = new Date().toISOString().split('T')[0];
-  XLSX.writeFile(wb, `작업스케줄_${today}.xlsx`);
-  showToast('✅ 엑셀 다운로드 완료!');
-}
-
-window.openAddModal=openAddModal; window.closeAddModal=closeAddModal;
-window.submitAdd=submitAdd; window.deleteItem=deleteItem;
-window.applyFilters=applyFilters;
+window.goPage=goPage; window.clearSearch=clearSearch; window.applyFilters=applyFilters;
+window.openAddModal=openAddModal; window.closeAddModal=closeAddModal; window.submitAdd=submitAdd;
+window.openEditByIdx=openEditByIdx; window.closeEditModal=closeEditModal; window.submitEdit=submitEdit;
+window.deleteItem=deleteItem;
 
 init();
 </script>
