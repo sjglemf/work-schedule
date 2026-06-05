@@ -401,7 +401,7 @@ function renderList(){
     const noteBox=d.비고?`<div class="note-box"><span class="note-icon">📝</span><span class="note-text">${d.비고}</span></div>`:'';
     return `<div class="card">
       <div class="card-top">
-        <span class="ship-name">${d.선명||'-'}</span>
+        <span class="ship-name" onclick="searchVessel('${d.선명||''}')" style="cursor:pointer">${d.선명||'-'}</span>
         <span class="status-badge ${sClass}">${d.상태||'-'}</span>
         <div class="card-btns">
           <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
@@ -560,6 +560,12 @@ window.goPage=goPage; window.clearSearch=clearSearch; window.applyFilters=applyF
 window.openAddModal=openAddModal; window.closeAddModal=closeAddModal; window.submitAdd=submitAdd;
 window.openEditByIdx=openEditByIdx; window.closeEditModal=closeEditModal; window.submitEdit=submitEdit;
 window.deleteItem=deleteItem;
+
+function searchVessel(name){
+  if(!name) return;
+  window.open('https://www.marinetraffic.com/en/ais/index/ships/all/shipname:'+encodeURIComponent(name), '_blank');
+}
+window.searchVessel=searchVessel;
 
 init();
 </script>
