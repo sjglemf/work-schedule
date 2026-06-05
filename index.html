@@ -584,72 +584,60 @@ window.openAddModal=openAddModal; window.closeAddModal=closeAddModal; window.sub
 window.openEditByIdx=openEditByIdx; window.closeEditModal=closeEditModal; window.submitEdit=submitEdit;
 window.deleteItem=deleteItem;
 
-async function searchVessel(idx){
+function searchVessel(idx){
   const d = filtered[idx];
   if(!d || !d.선명) return;
   const name = d.선명;
   document.getElementById('mapTitle').textContent = '🚢 ' + name;
   const mapBody = document.getElementById('mapBody');
-  mapBody.innerHTML = `<div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#8e8e93"><div style="font-size:36px">⚙️</div><div style="font-size:14px;font-weight:600">선박 정보 검색 중...</div></div>`;
+  mapBody.innerHTML = `
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;height:100%">
+      <div style="background:#1c1c1e;border-radius:14px;padding:16px;color:#fff">
+        <div style="font-size:17px;font-weight:800;margin-bottom:4px">🚢 ${name}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6)">${d.선사||''} ${d.구분==='해외'?'🌐 해외':''}</div>
+      </div>
+      <button id="copyBtn" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px;font-size:14px;font-weight:700;color:#1c1c1e;cursor:pointer;text-align:left;width:100%">
+        <span>📋 선명 클립보드 복사</span><span style="color:#8e8e93">탭하면 복사</span>
+      </button>
+      <a href="https://www.marinetraffic.com/en/ais/index/ships/all/shipname:${encodeURIComponent(name)}"
+         target="_blank"
+         style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px;text-decoration:none;color:#1c1c1e;font-weight:700;font-size:14px">
+        <span>🌐 MarineTraffic</span><span style="color:#0a84ff">→</span>
+      </a>
+      <a href="https://www.vesselfinder.com/vessels?name=${encodeURIComponent(name)}"
+         target="_blank"
+         style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px;text-decoration:none;color:#1c1c1e;font-weight:700;font-size:14px">
+        <span>🔍 VesselFinder</span><span style="color:#0a84ff">→</span>
+      </a>
+      <div style="background:#fff;border-radius:14px;padding:16px;border:0.5px solid #e5e5ea">
+        <div style="font-size:12px;font-weight:700;color:#8e8e93;margin-bottom:10px">📋 작업 정보</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+          <div><div style="color:#8e8e93;font-size:11px">선사</div><b>${d.선사||'-'}</b></div>
+          <div><div style="color:#8e8e93;font-size:11px">상태</div><b>${d.상태||'-'}</b></div>
+          <div><div style="color:#8e8e93;font-size:11px">날짜</div><b>${d.날짜||'-'}</b></div>
+          <div><div style="color:#8e8e93;font-size:11px">장소</div><b>${d.장소||'-'}</b></div>
+          <div><div style="color:#8e8e93;font-size:11px">메인엔진</div><b>${d.메인엔진||'-'}</b></div>
+          <div><div style="color:#8e8e93;font-size:11px">메인GOV</div><b>${d.메인GOV||'-'}</b></div>
+          <div><div style="color:#8e8e93;font-size:11px">발전기</div><b>${d.발전기||'-'}</b></div>
+          <div><div style="color:#8e8e93;font-size:11px">발전기GOV</div><b>${d.발전기GOV||'-'}</b></div>
+          ${d.하가일정?`<div><div style="color:#8e8e93;font-size:11px">하가일정</div><b>${d.하가일정}</b></div>`:''}
+          ${d.비고?`<div style="grid-column:1/-1"><div style="color:#8e8e93;font-size:11px">비고</div><b>${d.비고}</b></div>`:''}
+        </div>
+      </div>
+    </div>
+  `;
+  // 클립보드 복사 버튼
+  document.getElementById('copyBtn').onclick = function(){
+    navigator.clipboard.writeText(name).then(()=>{
+      this.innerHTML = '<span>✅ 복사됐습니다!</span><span style="color:#30d158">완료</span>';
+      setTimeout(()=>{
+        this.innerHTML = '<span>📋 선명 클립보드 복사</span><span style="color:#8e8e93">탭하면 복사</span>';
+      }, 2000);
+    });
+  };
   document.getElementById('mapOverlay').classList.add('open');
   requestAnimationFrame(()=>document.getElementById('mapModal').classList.add('open'));
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:`Search VesselFinder for ship named "${name}". Return ONLY a JSON object, no markdown:
-{"imo":"","mmsi":"","type":"","flag":"","year_built":"","length":"","width":"","gt":"","dwt":"","status":"","speed":"","destination":"","position":""}
-Use "-" for missing fields.`}]
-      })
-    });
-    const data = await res.json();
-    const text = data.content.map(c=>c.text||'').join('');
-    let info = {};
-    try { const m=text.match(/\{[\s\S]*?\}/); if(m) info=JSON.parse(m[0]); } catch(e){}
-    mapBody.innerHTML = `
-      <div style="padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;height:100%">
-        <div style="background:#1c1c1e;border-radius:14px;padding:16px;color:#fff">
-          <div style="font-size:17px;font-weight:800;margin-bottom:6px">🚢 ${name}</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            ${info.flag&&info.flag!=='-'?`<span style="background:rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:12px">${info.flag}</span>`:''}
-            ${info.type&&info.type!=='-'?`<span style="background:#0a84ff;border-radius:20px;padding:3px 10px;font-size:12px">${info.type}</span>`:''}
-            ${info.status&&info.status!=='-'?`<span style="background:#30d158;border-radius:20px;padding:3px 10px;font-size:12px">${info.status}</span>`:''}
-          </div>
-        </div>
-        <div style="background:#fff;border-radius:14px;padding:16px;border:0.5px solid #e5e5ea">
-          <div style="font-size:12px;font-weight:700;color:#8e8e93;margin-bottom:10px">📋 선박 제원</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
-            <div><div style="color:#8e8e93;font-size:11px">IMO</div><b>${info.imo||'-'}</b></div>
-            <div><div style="color:#8e8e93;font-size:11px">MMSI</div><b>${info.mmsi||'-'}</b></div>
-            <div><div style="color:#8e8e93;font-size:11px">건조년도</div><b>${info.year_built||'-'}</b></div>
-            <div><div style="color:#8e8e93;font-size:11px">국적</div><b>${info.flag||'-'}</b></div>
-            <div><div style="color:#8e8e93;font-size:11px">길이</div><b>${info.length&&info.length!=='-'?info.length+'m':'-'}</b></div>
-            <div><div style="color:#8e8e93;font-size:11px">너비</div><b>${info.width&&info.width!=='-'?info.width+'m':'-'}</b></div>
-            <div><div style="color:#8e8e93;font-size:11px">총톤수(GT)</div><b>${info.gt||'-'}</b></div>
-            <div><div style="color:#8e8e93;font-size:11px">재화중량(DWT)</div><b>${info.dwt||'-'}</b></div>
-          </div>
-        </div>
-        <div style="background:#fff;border-radius:14px;padding:16px;border:0.5px solid #e5e5ea">
-          <div style="font-size:12px;font-weight:700;color:#8e8e93;margin-bottom:10px">📍 현재 운항 정보</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
-            <div><div style="color:#8e8e93;font-size:11px">항해 상태</div><b>${info.status||'-'}</b></div>
-            <div><div style="color:#8e8e93;font-size:11px">속도</div><b>${info.speed&&info.speed!=='-'?info.speed+' kts':'-'}</b></div>
-            <div><div style="color:#8e8e93;font-size:11px">목적지</div><b>${info.destination||'-'}</b></div>
-            <div><div style="color:#8e8e93;font-size:11px">현재 위치</div><b>${info.position||'-'}</b></div>
-          </div>
-        </div>
-        <a href="https://www.vesselfinder.com/vessels?name=${encodeURIComponent(name)}" target="_blank"
-           style="display:flex;align-items:center;justify-content:space-between;background:#f2f2f7;border-radius:14px;padding:14px;text-decoration:none;color:#0a84ff;font-weight:700;font-size:14px">
-          <span>🔍 VesselFinder에서 더 보기</span><span>→</span>
-        </a>
-      </div>`;
-  } catch(e) {
-    mapBody.innerHTML = `<div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#8e8e93;padding:20px;text-align:center"><div style="font-size:36px">⚠️</div><div style="font-size:14px;font-weight:600">정보를 가져오지 못했습니다</div><a href="https://www.vesselfinder.com/vessels?name=${encodeURIComponent(name)}" target="_blank" style="background:#0a84ff;color:#fff;border-radius:12px;padding:12px 20px;text-decoration:none;font-weight:700">VesselFinder에서 직접 검색</a></div>`;
-  }
+}
 }function closeMapModal(){
   document.getElementById('mapOverlay').classList.remove('open');
   document.getElementById('mapModal').classList.remove('open');
