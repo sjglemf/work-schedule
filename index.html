@@ -586,7 +586,12 @@ window.deleteItem=deleteItem;
 
 function searchVessel(name){
   if(!name) return;
-  window.open('https://www.marinetraffic.com/en/ais/index/ships/all/shipname:'+encodeURIComponent(name), '_blank');
+  // MarineTraffic 앱 딥링크 시도, 안되면 웹으로
+  const appUrl = 'marinetraffic://www.marinetraffic.com/en/ais/index/ships/all/shipname:'+encodeURIComponent(name);
+  const webUrl = 'https://www.marinetraffic.com/en/ais/index/ships/all/shipname:'+encodeURIComponent(name);
+  const t = setTimeout(()=>{ window.open(webUrl,'_blank'); }, 1500);
+  window.location = appUrl;
+  window.addEventListener('blur', ()=>clearTimeout(t), {once:true});
 }
 window.searchVessel=searchVessel;
 window.closeMapModal=closeMapModal;
