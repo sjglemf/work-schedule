@@ -525,27 +525,25 @@ function openShipModal(idx){
       <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px">${d.선사||''} ${d.구분==='해외'?'🌐 해외':''}</div>
     </div>
 
-    <div style="background:#fff;border-radius:14px;border:0.5px solid #e5e5ea;overflow:hidden">
-      <div style="padding:12px 16px;font-size:12px;font-weight:700;color:#8e8e93;border-bottom:0.5px solid #f2f2f7">🔍 내항/외항 확인</div>
-      <a href="https://www.koswec.or.kr/koswec/information/shipsearch/selectShipSearchList.do?shipNm=${encodeURIComponent(name)}" target="_blank"
-         style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px;border-bottom:0.5px solid #f2f2f7">
-        <span>🚢 KOSWEC 선박조회</span><span style="color:#0a84ff;font-size:12px">내항/외항 확인 →</span>
-      </a>
-      <a href="https://www.vesselfinder.com/vessels?name=${encodeURIComponent(name)}" target="_blank"
-         style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px">
-        <span>🔍 VesselFinder</span><span style="color:#0a84ff;font-size:12px">IMO 번호 확인 →</span>
-      </a>
-    </div>
-
-    <button onclick="closeShipModal();openEditByIdx(${idx});"
-      style="background:#0a84ff;border:none;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;text-align:center;width:100%">
-      ✏️ 내항/외항 · IMO 입력하기
-    </button>
-
     <button onclick="navigator.clipboard.writeText('${name.replace(/'/g,"\\'")}').then(()=>{this.innerHTML='✅ 복사됐습니다!';setTimeout(()=>{this.innerHTML='📋 선명 클립보드 복사'},2000)})"
       style="background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600;color:#3c3c43;cursor:pointer;text-align:left;width:100%">
       📋 선명 클립보드 복사
     </button>
+
+    <a href="https://www.marinetraffic.com/en/ais/index/ships/all/shipname:${encodeURIComponent(name)}" target="_blank"
+       style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px">
+      <span>🌐 MarineTraffic</span><span style="color:#0a84ff">→</span>
+    </a>
+
+    <a href="https://www.vesselfinder.com/vessels?name=${encodeURIComponent(name)}" target="_blank"
+       style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px">
+      <span>🔍 VesselFinder</span><span style="color:#0a84ff">→</span>
+    </a>
+
+    <a href="https://www.koswec.or.kr/koswec/information/shipsearch/selectShipSearchList.do?shipNm=${encodeURIComponent(name)}" target="_blank"
+       style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px">
+      <span>🚢 KOSWEC 선박조회</span><span style="color:#0a84ff;font-size:12px">내항/외항 확인 →</span>
+    </a>
 
     <div style="background:#fff;border-radius:14px;padding:16px;border:0.5px solid #e5e5ea">
       <div style="font-size:12px;font-weight:700;color:#8e8e93;margin-bottom:10px">📋 작업 정보</div>
