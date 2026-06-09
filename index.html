@@ -327,7 +327,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
       <span>🔍 VesselFinder (IMO 확인)</span><span style="color:#0a84ff">→</span>
     </a>
   </div>
-  <div class="bs-footer"><button class="btn-green" id="vesselSubmitBtn" onclick="submitVesselForm()">💾 저장</button></div>
+  <div class="bs-footer" style="flex-direction:column;gap:8px">
+    <button class="btn-green" id="vesselSubmitBtn" onclick="submitVesselForm()">💾 저장</button>
+    <button id="vesselDeleteBtn" onclick="deleteVesselFromForm()" style="display:none;width:100%;background:none;border:1.5px solid #ff375f;border-radius:14px;padding:14px;font-size:16px;font-weight:600;color:#ff375f;cursor:pointer">🗑 이 선박 삭제</button>
+  </div>
 </div>
 
 <!-- 선박 정보 모달 -->
@@ -706,14 +709,14 @@ function renderVesselList(q=''){
     ? list.map((v,i)=>{
         const 구분Badge=v.선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:v.선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
         const imoBadge=v.imo?`<span class="b-imo">IMO ${v.imo}</span>`:'';
-        return `<div class="vessel-item">
-          <div class="vessel-info" onclick="openVesselEditByIndex(${i})" style="flex:1;cursor:pointer">
+        return `<div class="vessel-item" style="cursor:default">
+          <div class="vessel-info" onclick="openVesselEditByIndex(${i})" style="flex:1;cursor:pointer;min-width:0">
             <div class="vessel-name">${v.선명}</div>
             <div class="vessel-sub">${v.선사||'-'} ${v.메인엔진?'· '+v.메인엔진:''}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:6px">
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
             <div class="vessel-badges">${구분Badge}${imoBadge}</div>
-            <button onclick="deleteVessel(${i})" style="background:none;border:none;color:#c7c7cc;font-size:18px;padding:4px;cursor:pointer;flex-shrink:0">🗑</button>
+            <button onclick="event.stopPropagation();deleteVessel(${i})" style="background:none;border:none;color:#c7c7cc;font-size:18px;padding:4px;cursor:pointer">🗑</button>
           </div>
         </div>`;
       }).join('')
@@ -725,6 +728,8 @@ function renderVesselList(q=''){
 function openVesselAdd(){
   document.getElementById('vesselFormTitle').textContent='선박 등록';
   document.getElementById('vf_fbId').value='';
+  document.getElementById('vf_oldName').value='';
+  document.getElementById('vesselDeleteBtn').style.display='none';
   ['선명','선사','imo','메인엔진','메인GOV','발전기','발전기GOV'].forEach(k=>document.getElementById('vf_'+k).value='');
   document.getElementById('vf_선박구분').value='';
   document.getElementById('vf_koswec_link').href='https://www.koswec.or.kr/koswec/information/shipsearch/selectShipSearchList.do';
@@ -742,6 +747,7 @@ function openVesselEdit(fbId, name){
   document.getElementById('vesselFormTitle').textContent = vm._fbId ? '선박 수정' : '선박 등록';
   document.getElementById('vf_fbId').value = vm._fbId||'';
   document.getElementById('vf_oldName').value = vm.선명||'';
+  document.getElementById('vesselDeleteBtn').style.display = (vm._fbId||vm.선명) ? 'block' : 'none';
   ['선명','선사','imo','메인엔진','메인GOV','발전기','발전기GOV'].forEach(k=>document.getElementById('vf_'+k).value=vm[k]||'');
   document.getElementById('vf_선박구분').value=vm.선박구분||'';
   const enc=encodeURIComponent(vm.선명);
@@ -867,7 +873,27 @@ async function deleteVessel(idx){
     renderVesselList(document.getElementById('vesselSearchInput').value);
   }catch(e){alert('삭제 실패: '+e.message);}
 }
-window.deleteVessel=deleteVessel;
+async function deleteVesselFromForm(){
+  const fbId=document.getElementById('vf_fbId').value;
+  const name=document.getElementById('vf_oldName').value||document.getElementById('vf_선명').value;
+  if(!name)return;
+  if(!confirm(`"${name}" 선박을 삭제할까요?\n관련 작업 기록은 유지됩니다.`))return;
+  try{
+    if(fbId){
+      await deleteDoc(doc(db,'vessels',fbId));
+    } else {
+      const uid='base_'+BASE_DATA.findIndex(d=>d.선명===name);
+      const newDel=new Set(deletedIds);
+      newDel.add(uid);
+      await setDoc(doc(db,'meta','deleted_ids'),{ids:[...newDel]});
+    }
+    closeVesselForm();
+    renderVesselCompanyChips();
+    renderVesselList(document.getElementById('vesselSearchInput').value);
+    showToast(`🗑 "${name}" 삭제됐습니다`);
+  }catch(e){alert('삭제 실패: '+e.message);}
+}
+window.deleteVesselFromForm=deleteVesselFromForm;
 window.submitVesselForm=submitVesselForm;window.renderVesselList=renderVesselList;window.setVesselCompany=setVesselCompany;window.getAllVessels=getAllVessels;
 window.filterVesselSuggest=filterVesselSuggest;window.selectVessel=selectVessel;
 
