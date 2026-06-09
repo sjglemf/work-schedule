@@ -705,23 +705,30 @@ function renderVesselList(q=''){
     return true;
   });
   list.sort((a,b)=>(a.선명||'').localeCompare(b.선명||'','ko'));
-    document.getElementById('vesselListBody').innerHTML = list.length
-    ? list.map((v,i)=>{
-        const 구분Badge=v.선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:v.선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
-        const imoBadge=v.imo?`<span class="b-imo">IMO ${v.imo}</span>`:'';
-        return `<div class="vessel-item" onclick="openVesselEditByIndex(${i})" style="cursor:pointer">
-          <div class="vessel-info" style="flex:1;min-width:0">
-            <div class="vessel-name">${v.선명}</div>
-            <div class="vessel-sub">${v.선사||'-'} ${v.메인엔진?'· '+v.메인엔진:''}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
-            <div class="vessel-badges">${구분Badge}${imoBadge}</div>
-            <button onclick="deleteVessel(${i})" style="background:none;border:none;color:#c7c7cc;font-size:18px;padding:4px;cursor:pointer">🗑</button>
-          </div>
-        </div>`;
-      }).join('')
-    : '<div class="empty"><div class="icon">🚢</div><p>선박이 없습니다</p></div>';
+    const bodyEl = document.getElementById('vesselListBody');
   window._currentVesselList = list;
+  if(!list.length){
+    bodyEl.innerHTML='<div class="empty"><div class="icon">🚢</div><p>선박이 없습니다</p></div>';
+    return;
+  }
+  bodyEl.innerHTML = list.map((v,i)=>{
+    const 구분Badge=v.선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:v.선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
+    const imoBadge=v.imo?`<span class="b-imo">IMO ${v.imo}</span>`:'';
+    return `<div class="vessel-item" data-idx="${i}">
+      <div class="vessel-info" style="flex:1;min-width:0">
+        <div class="vessel-name">${v.선명}</div>
+        <div class="vessel-sub">${v.선사||'-'} ${v.메인엔진?'· '+v.메인엔진:''}</div>
+      </div>
+      <div class="vessel-badges">${구분Badge}${imoBadge}</div>
+    </div>`;
+  }).join('');
+  // 이벤트 위임으로 클릭 처리
+  bodyEl.onclick = function(e){
+    const item = e.target.closest('.vessel-item');
+    if(!item) return;
+    const idx = parseInt(item.dataset.idx);
+    openVesselEditByIndex(idx);
+  };
 }
 
 // 선박 등록
