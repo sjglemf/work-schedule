@@ -549,7 +549,7 @@ function ga(id){return document.getElementById(id).value.trim();}
 function filterVesselSuggest(val, prefix){
   const sug=document.getElementById(prefix+'_suggest');
   if(!val){sug.style.display='none';return;}
-  const allVessels=[...fbVessels,...BASE_VESSELS.filter(b=>!fbVessels.find(f=>f.선명===b.선명))];
+  const allVessels=getAllVessels();
   const matches=allVessels.filter(v=>(v.선명||'').toLowerCase().includes(val.toLowerCase())).slice(0,8);
   if(!matches.length){sug.style.display='none';return;}
   sug.style.display='block';
@@ -647,7 +647,7 @@ function openVesselList(){
 function closeVesselList(){closeSheet('vesselListOverlay','vesselListSheet');}
 
 function renderVesselCompanyChips(){
-  const allVessels=[...fbVessels,...BASE_VESSELS.filter(b=>!fbVessels.find(f=>f.선명===b.선명))];
+  const allVessels=getAllVessels();
   const cnt={};
   allVessels.forEach(v=>{if(v.선사)cnt[v.선사]=(cnt[v.선사]||0)+1;});
   const companies=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
@@ -658,6 +658,31 @@ function renderVesselCompanyChips(){
   `;
 }
 
+// schedules 포함한 전체 선박 목록
+function getAllVessels(){
+  const masterMap={};
+  // 1. BASE_VESSELS
+  BASE_VESSELS.forEach(v=>{ masterMap[v.선명]={...v}; });
+  // 2. Firebase vessels (마스터) - 덮어씀
+  fbVessels.forEach(v=>{ masterMap[v.선명]={...v}; });
+  // 3. schedules에서 선박명 추출 (마스터에 없는 것만)
+  const allSched=[...fbSchedules,...BASE_WITH_ID];
+  const seenNames=new Set();
+  allSched.forEach(d=>{
+    if(!d.선명||seenNames.has(d.선명))return;
+    seenNames.add(d.선명);
+    if(!masterMap[d.선명]){
+      masterMap[d.선명]={
+        선명:d.선명, 선사:d.선사||'',
+        메인엔진:d.메인엔진||'', 메인GOV:d.메인GOV||'',
+        발전기:d.발전기||'', 발전기GOV:d.발전기GOV||'',
+        imo:'', 선박구분:'', _scheduleOnly:true
+      };
+    }
+  });
+  return Object.values(masterMap);
+}
+
 function setVesselCompany(company){
   window._vesselCompanyFilter=company;
   renderVesselCompanyChips();
@@ -665,7 +690,7 @@ function setVesselCompany(company){
 }
 
 function renderVesselList(q=''){
-  const allVessels=[...fbVessels,...BASE_VESSELS.filter(b=>!fbVessels.find(f=>f.선명===b.선명))];
+  const allVessels=getAllVessels();
   const company=window._vesselCompanyFilter||'';
   let list=allVessels.filter(v=>{
     if(q&&!(v.선명||'').toLowerCase().includes(q.toLowerCase()))return false;
@@ -781,7 +806,7 @@ window.deleteItem=deleteItem;
 window.openShipModal=openShipModal;window.closeShipModal=closeShipModal;
 window.openVesselList=openVesselList;window.closeVesselList=closeVesselList;
 window.openVesselAdd=openVesselAdd;window.openVesselEdit=openVesselEdit;window.closeVesselForm=closeVesselForm;
-window.submitVesselForm=submitVesselForm;window.renderVesselList=renderVesselList;window.setVesselCompany=setVesselCompany;
+window.submitVesselForm=submitVesselForm;window.renderVesselList=renderVesselList;window.setVesselCompany=setVesselCompany;window.getAllVessels=getAllVessels;
 window.filterVesselSuggest=filterVesselSuggest;window.selectVessel=selectVessel;
 
 init();
