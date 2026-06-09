@@ -213,6 +213,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
       <div class="form-group"><label>하가일정</label><input type="date" class="form-input" id="a_하가일정"></div>
       <div class="form-group" style="opacity:0"></div>
     </div>
+    <div class="form-row">
+      <div class="form-group"><label>선박 구분</label><select class="form-select" id="a_선박구분"><option value="">미지정</option><option value="내항선">내항선</option><option value="외항선">외항선</option></select></div>
+      <div class="form-group"><label>IMO 번호</label><input type="text" class="form-input" id="a_imo" placeholder="예: 9123456"></div>
+    </div>
     <div class="form-group"><label>비고</label><input type="text" class="form-input" id="a_비고" placeholder="특이사항 입력"></div>
   </div>
   <div class="modal-footer"><button class="btn-submit" id="addSubmitBtn" onclick="submitAdd()">✅ 일정 추가</button></div>
@@ -252,6 +256,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
     <div class="form-row">
       <div class="form-group"><label>하가일정</label><input type="date" class="form-input" id="e_하가일정"></div>
       <div class="form-group" style="opacity:0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>선박 구분</label><select class="form-select" id="e_선박구분"><option value="">미지정</option><option value="내항선">내항선</option><option value="외항선">외항선</option></select></div>
+      <div class="form-group"><label>IMO 번호</label><input type="text" class="form-input" id="e_imo" placeholder="예: 9123456"></div>
     </div>
     <div class="form-group"><label>비고</label><input type="text" class="form-input" id="e_비고" placeholder="특이사항 입력"></div>
   </div>
@@ -372,6 +380,9 @@ function renderList(){
   const start=(page-1)*PAGE,end=Math.min(start+PAGE,total);
   listEl.innerHTML=filtered.slice(start,end).map((d,i)=>{
     const sClass='s-'+(d.상태||'');
+    const 선박구분Tag = d.선박구분==='내항선' ? `<span style="background:#e8f5e9;color:#2e7d32;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:700">내항</span>`
+      : d.선박구분==='외항선' ? `<span style="background:#e3f2fd;color:#1565c0;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:700">외항</span>` : '';
+    const imoTag = d.imo ? `<span style="background:#f2f2f7;color:#3c3c43;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600">IMO ${d.imo}</span>` : '';
     const overseasTag=d.구분==='해외'?`<span class="tag t-overseas">🌐 해외</span>`:'';
     const hagaTag=d.하가일정?`<span class="tag t-haga">📋 하가 ${d.하가일정}</span>`:'';
     let mainSec='';
@@ -394,6 +405,7 @@ function renderList(){
     return `<div class="card">
       <div class="card-top">
         <span class="ship-name" onclick="openShipModal(${start+i})">${d.선명||'-'}</span>
+        ${선박구분Tag}${imoTag}
         <span class="status-badge ${sClass}">${d.상태||'-'}</span>
         <div class="card-btns">
           <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
@@ -446,9 +458,9 @@ async function submitAdd(){
   const btn=document.getElementById('addSubmitBtn');
   btn.textContent='저장 중...';btn.disabled=true;
   try{
-    await addDoc(collection(db,'schedules'),{날짜,선명,선사:ga('a_선사'),장소:ga('a_장소'),구분:ga('a_구분')||'국내',상태:ga('a_상태')||'예정',메인엔진:ga('a_메인엔진'),메인GOV:ga('a_메인GOV'),메인작업:ga('a_메인작업'),발전기:ga('a_발전기'),발전기GOV:ga('a_발전기GOV'),발전기작업:ga('a_발전기작업'),하가일정:ga('a_하가일정'),비고:ga('a_비고'),createdAt:new Date().toISOString()});
-    ['선명','선사','장소','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','비고'].forEach(k=>document.getElementById('a_'+k).value='');
-    document.getElementById('a_상태').value='예정';document.getElementById('a_구분').value='국내';
+    await addDoc(collection(db,'schedules'),{날짜,선명,선사:ga('a_선사'),장소:ga('a_장소'),구분:ga('a_구분')||'국내',상태:ga('a_상태')||'예정',메인엔진:ga('a_메인엔진'),메인GOV:ga('a_메인GOV'),메인작업:ga('a_메인작업'),발전기:ga('a_발전기'),발전기GOV:ga('a_발전기GOV'),발전기작업:ga('a_발전기작업'),하가일정:ga('a_하가일정'),선박구분:ga('a_선박구분'),imo:ga('a_imo'),비고:ga('a_비고'),createdAt:new Date().toISOString()});
+    ['선명','선사','장소','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','비고','imo'].forEach(k=>document.getElementById('a_'+k).value='');
+    document.getElementById('a_상태').value='예정';document.getElementById('a_구분').value='국내';document.getElementById('a_선박구분').value='';
     document.getElementById('a_날짜').value=new Date().toISOString().split('T')[0];
     document.getElementById('a_하가일정').value='';
     closeAddModal();showToast(`✅ "${선명}" 추가됐습니다!`);
@@ -459,7 +471,7 @@ async function submitAdd(){
 function openEditByIdx(idx){
   const d=filtered[idx];if(!d)return;
   window._editIdx=idx;
-  ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','비고'].forEach(k=>{
+  ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','선박구분','imo','비고'].forEach(k=>{
     const el=document.getElementById('e_'+k);if(el)el.value=d[k]||'';
   });
   document.getElementById('editOverlay').classList.add('open');
@@ -472,7 +484,7 @@ async function submitEdit(){
   const d=filtered[window._editIdx];if(!d)return;
   const 날짜=ge('e_날짜'),선명=ge('e_선명');
   if(!날짜||!선명){alert('날짜와 선명은 필수입니다.');return;}
-  const updated={날짜,선명,선사:ge('e_선사'),장소:ge('e_장소'),구분:ge('e_구분')||'국내',상태:ge('e_상태')||'예정',메인엔진:ge('e_메인엔진'),메인GOV:ge('e_메인GOV'),메인작업:ge('e_메인작업'),발전기:ge('e_발전기'),발전기GOV:ge('e_발전기GOV'),발전기작업:ge('e_발전기작업'),하가일정:ge('e_하가일정'),비고:ge('e_비고')};
+  const updated={날짜,선명,선사:ge('e_선사'),장소:ge('e_장소'),구분:ge('e_구분')||'국내',상태:ge('e_상태')||'예정',메인엔진:ge('e_메인엔진'),메인GOV:ge('e_메인GOV'),메인작업:ge('e_메인작업'),발전기:ge('e_발전기'),발전기GOV:ge('e_발전기GOV'),발전기작업:ge('e_발전기작업'),하가일정:ge('e_하가일정'),선박구분:ge('e_선박구분'),imo:ge('e_imo'),비고:ge('e_비고')};
   const btn=document.getElementById('editSubmitBtn');btn.textContent='저장 중...';btn.disabled=true;
   try{
     if(d._fbId){
@@ -500,24 +512,41 @@ async function deleteItem(idx){
 function openShipModal(idx){
   const d=filtered[idx];if(!d||!d.선명)return;
   const name=d.선명;
+  window._shipModalIdx=idx;
   document.getElementById('shipTitle').textContent='🚢 '+name;
   document.getElementById('shipBody').innerHTML=`
     <div style="background:#1c1c1e;border-radius:14px;padding:16px;color:#fff">
       <div style="font-size:17px;font-weight:800;margin-bottom:4px">${name}</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.6)">${d.선사||''} ${d.구분==='해외'?'🌐 해외':''}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+        ${d.선박구분==='내항선'?`<span style="background:rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700">🔵 내항선</span>`:''}
+        ${d.선박구분==='외항선'?`<span style="background:rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700">🟠 외항선</span>`:''}
+        ${d.imo?`<span style="background:rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:12px">IMO ${d.imo}</span>`:''}
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px">${d.선사||''} ${d.구분==='해외'?'🌐 해외':''}</div>
     </div>
+
+    <div style="background:#fff;border-radius:14px;border:0.5px solid #e5e5ea;overflow:hidden">
+      <div style="padding:12px 16px;font-size:12px;font-weight:700;color:#8e8e93;border-bottom:0.5px solid #f2f2f7">🔍 내항/외항 확인</div>
+      <a href="https://www.koswec.or.kr/koswec/information/shipsearch/selectShipSearchList.do?shipNm=${encodeURIComponent(name)}" target="_blank"
+         style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px;border-bottom:0.5px solid #f2f2f7">
+        <span>🚢 KOSWEC 선박조회</span><span style="color:#0a84ff;font-size:12px">내항/외항 확인 →</span>
+      </a>
+      <a href="https://www.vesselfinder.com/vessels?name=${encodeURIComponent(name)}" target="_blank"
+         style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px">
+        <span>🔍 VesselFinder</span><span style="color:#0a84ff;font-size:12px">IMO 번호 확인 →</span>
+      </a>
+    </div>
+
+    <button onclick="closeShipModal();openEditByIdx(${idx});"
+      style="background:#0a84ff;border:none;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;text-align:center;width:100%">
+      ✏️ 내항/외항 · IMO 입력하기
+    </button>
+
     <button onclick="navigator.clipboard.writeText('${name.replace(/'/g,"\\'")}').then(()=>{this.innerHTML='✅ 복사됐습니다!';setTimeout(()=>{this.innerHTML='📋 선명 클립보드 복사'},2000)})"
-      style="background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;color:#1c1c1e;cursor:pointer;text-align:left;width:100%">
+      style="background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600;color:#3c3c43;cursor:pointer;text-align:left;width:100%">
       📋 선명 클립보드 복사
     </button>
-    <a href="https://www.marinetraffic.com/en/ais/index/ships/all/shipname:${encodeURIComponent(name)}" target="_blank"
-       style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:700;font-size:14px">
-      <span>🌐 MarineTraffic</span><span style="color:#0a84ff">→</span>
-    </a>
-    <a href="https://www.vesselfinder.com/vessels?name=${encodeURIComponent(name)}" target="_blank"
-       style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:700;font-size:14px">
-      <span>🔍 VesselFinder</span><span style="color:#0a84ff">→</span>
-    </a>
+
     <div style="background:#fff;border-radius:14px;padding:16px;border:0.5px solid #e5e5ea">
       <div style="font-size:12px;font-weight:700;color:#8e8e93;margin-bottom:10px">📋 작업 정보</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
