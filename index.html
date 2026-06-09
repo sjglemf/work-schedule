@@ -698,11 +698,11 @@ function renderVesselList(q=''){
     return true;
   });
   list.sort((a,b)=>(a.선명||'').localeCompare(b.선명||'','ko'));
-  document.getElementById('vesselListBody').innerHTML = list.length
-    ? list.map(v=>{
+    document.getElementById('vesselListBody').innerHTML = list.length
+    ? list.map((v,i)=>{
         const 구분Badge=v.선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:v.선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
         const imoBadge=v.imo?`<span class="b-imo">IMO ${v.imo}</span>`:'';
-        return `<div class="vessel-item" onclick="openVesselEdit('${(v._fbId||'').replace(/'/g,"\\'")}','${v.선명.replace(/'/g,"\\'")}')">
+        return `<div class="vessel-item" onclick="openVesselEditByIndex(${i})">
           <div class="vessel-info">
             <div class="vessel-name">${v.선명}</div>
             <div class="vessel-sub">${v.선사||'-'} ${v.메인엔진?'· '+v.메인엔진:''}</div>
@@ -711,6 +711,7 @@ function renderVesselList(q=''){
         </div>`;
       }).join('')
     : '<div class="empty"><div class="icon">🚢</div><p>선박이 없습니다</p></div>';
+  window._currentVesselList = list;
 }
 
 // 선박 등록
@@ -726,10 +727,13 @@ function openVesselAdd(){
 
 // 선박 수정
 function openVesselEdit(fbId, name){
-  const vm=fbId?fbVessels.find(v=>v._fbId===fbId):BASE_VESSELS.find(v=>v.선명===name);
-  if(!vm)return;
-  document.getElementById('vesselFormTitle').textContent='선박 수정';
-  document.getElementById('vf_fbId').value=fbId||'';
+  // Firebase 마스터 → BASE_VESSELS → schedules 순서로 찾기
+  let vm = fbId ? fbVessels.find(v=>v._fbId===fbId) : null;
+  if(!vm) vm = BASE_VESSELS.find(v=>v.선명===name);
+  if(!vm) vm = getAllVessels().find(v=>v.선명===name);
+  if(!vm) vm = {선명:name, 선사:'', imo:'', 선박구분:'', 메인엔진:'', 메인GOV:'', 발전기:'', 발전기GOV:''};
+  document.getElementById('vesselFormTitle').textContent = vm._fbId ? '선박 수정' : '선박 등록';
+  document.getElementById('vf_fbId').value = vm._fbId||'';
   ['선명','선사','imo','메인엔진','메인GOV','발전기','발전기GOV'].forEach(k=>document.getElementById('vf_'+k).value=vm[k]||'');
   document.getElementById('vf_선박구분').value=vm.선박구분||'';
   const enc=encodeURIComponent(vm.선명);
@@ -805,7 +809,12 @@ window.openEditByIdx=openEditByIdx;window.closeEditModal=closeEditModal;window.s
 window.deleteItem=deleteItem;
 window.openShipModal=openShipModal;window.closeShipModal=closeShipModal;
 window.openVesselList=openVesselList;window.closeVesselList=closeVesselList;
-window.openVesselAdd=openVesselAdd;window.openVesselEdit=openVesselEdit;window.closeVesselForm=closeVesselForm;
+function openVesselEditByIndex(idx){
+  const v = window._currentVesselList && window._currentVesselList[idx];
+  if(!v) return;
+  openVesselEdit(v._fbId||'', v.선명);
+}
+window.openVesselEditByIndex=openVesselEditByIndex;
 window.submitVesselForm=submitVesselForm;window.renderVesselList=renderVesselList;window.setVesselCompany=setVesselCompany;window.getAllVessels=getAllVessels;
 window.filterVesselSuggest=filterVesselSuggest;window.selectVessel=selectVessel;
 
