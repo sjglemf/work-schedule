@@ -284,6 +284,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
       <span style="color:#8e8e93">🔍</span>
       <input type="search" id="vesselSearchInput" placeholder="선박명 검색" oninput="renderVesselList(this.value)" style="flex:1;border:none;background:transparent;font-size:15px;padding:8px 0;outline:none">
     </div>
+    <div id="vesselCompanyChips" style="display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;-webkit-overflow-scrolling:touch"></div>
     <div id="vesselListBody"></div>
   </div>
 </div>
@@ -638,14 +639,39 @@ async function deleteItem(idx){
 
 // 선박 마스터 목록
 function openVesselList(){
+  window._vesselCompanyFilter='';
+  renderVesselCompanyChips();
   renderVesselList('');
   openSheet('vesselListOverlay','vesselListSheet');
 }
 function closeVesselList(){closeSheet('vesselListOverlay','vesselListSheet');}
 
+function renderVesselCompanyChips(){
+  const allVessels=[...fbVessels,...BASE_VESSELS.filter(b=>!fbVessels.find(f=>f.선명===b.선명))];
+  const cnt={};
+  allVessels.forEach(v=>{if(v.선사)cnt[v.선사]=(cnt[v.선사]||0)+1;});
+  const companies=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+  const sel=window._vesselCompanyFilter||'';
+  document.getElementById('vesselCompanyChips').innerHTML=`
+    <button onclick="setVesselCompany('')" style="flex-shrink:0;border:none;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;background:${!sel?'#1c1c1e':'#f2f2f7'};color:${!sel?'#fff':'#3c3c43'}">전체 ${allVessels.length}</button>
+    ${companies.map(([c,n])=>`<button onclick="setVesselCompany('${c.replace(/'/g,"\\'")}') " style="flex-shrink:0;border:none;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;background:${sel===c?'#1c1c1e':'#f2f2f7'};color:${sel===c?'#fff':'#3c3c43'}">${c} ${n}</button>`).join('')}
+  `;
+}
+
+function setVesselCompany(company){
+  window._vesselCompanyFilter=company;
+  renderVesselCompanyChips();
+  renderVesselList(document.getElementById('vesselSearchInput').value);
+}
+
 function renderVesselList(q=''){
   const allVessels=[...fbVessels,...BASE_VESSELS.filter(b=>!fbVessels.find(f=>f.선명===b.선명))];
-  const list=q?allVessels.filter(v=>(v.선명||'').toLowerCase().includes(q.toLowerCase())):allVessels;
+  const company=window._vesselCompanyFilter||'';
+  let list=allVessels.filter(v=>{
+    if(q&&!(v.선명||'').toLowerCase().includes(q.toLowerCase()))return false;
+    if(company&&v.선사!==company)return false;
+    return true;
+  });
   list.sort((a,b)=>(a.선명||'').localeCompare(b.선명||'','ko'));
   document.getElementById('vesselListBody').innerHTML = list.length
     ? list.map(v=>{
@@ -755,7 +781,7 @@ window.deleteItem=deleteItem;
 window.openShipModal=openShipModal;window.closeShipModal=closeShipModal;
 window.openVesselList=openVesselList;window.closeVesselList=closeVesselList;
 window.openVesselAdd=openVesselAdd;window.openVesselEdit=openVesselEdit;window.closeVesselForm=closeVesselForm;
-window.submitVesselForm=submitVesselForm;window.renderVesselList=renderVesselList;
+window.submitVesselForm=submitVesselForm;window.renderVesselList=renderVesselList;window.setVesselCompany=setVesselCompany;
 window.filterVesselSuggest=filterVesselSuggest;window.selectVessel=selectVessel;
 
 init();
