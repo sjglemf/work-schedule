@@ -662,12 +662,15 @@ function renderVesselCompanyChips(){
 // schedules 포함한 전체 선박 목록
 function getAllVessels(){
   const masterMap={};
-  // 1. BASE_VESSELS
-  BASE_VESSELS.forEach(v=>{ masterMap[v.선명]={...v}; });
+  // 1. BASE_VESSELS (삭제된 것 제외)
+  BASE_VESSELS.forEach((v,i)=>{
+    const uid='base_'+BASE_DATA.findIndex(d=>d.선명===v.선명);
+    if(!deletedIds.has(uid)) masterMap[v.선명]={...v};
+  });
   // 2. Firebase vessels (마스터) - 덮어씀
   fbVessels.forEach(v=>{ masterMap[v.선명]={...v}; });
   // 3. schedules에서 선박명 추출 (마스터에 없는 것만)
-  const allSched=[...fbSchedules,...BASE_WITH_ID];
+  const allSched=[...fbSchedules,...BASE_WITH_ID.filter(d=>!deletedIds.has(d._uid))];
   const seenNames=new Set();
   allSched.forEach(d=>{
     if(!d.선명||seenNames.has(d.선명))return;
