@@ -706,12 +706,15 @@ function renderVesselList(q=''){
     ? list.map((v,i)=>{
         const 구분Badge=v.선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:v.선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
         const imoBadge=v.imo?`<span class="b-imo">IMO ${v.imo}</span>`:'';
-        return `<div class="vessel-item" onclick="openVesselEditByIndex(${i})">
-          <div class="vessel-info">
+        return `<div class="vessel-item">
+          <div class="vessel-info" onclick="openVesselEditByIndex(${i})" style="flex:1;cursor:pointer">
             <div class="vessel-name">${v.선명}</div>
             <div class="vessel-sub">${v.선사||'-'} ${v.메인엔진?'· '+v.메인엔진:''}</div>
           </div>
-          <div class="vessel-badges">${구분Badge}${imoBadge}</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="vessel-badges">${구분Badge}${imoBadge}</div>
+            <button onclick="deleteVessel(${i})" style="background:none;border:none;color:#c7c7cc;font-size:18px;padding:4px;cursor:pointer;flex-shrink:0">🗑</button>
+          </div>
         </div>`;
       }).join('')
     : '<div class="empty"><div class="icon">🚢</div><p>선박이 없습니다</p></div>';
@@ -844,7 +847,27 @@ function openVesselEditByIndex(idx){
   if(!v) return;
   openVesselEdit(v._fbId||'', v.선명);
 }
-window.openVesselEditByIndex=openVesselEditByIndex;
+async function deleteVessel(idx){
+  const v=window._currentVesselList&&window._currentVesselList[idx];
+  if(!v)return;
+  if(!confirm(`"${v.선명}" 선박을 삭제할까요?\n관련 작업 기록은 유지됩니다.`))return;
+  try{
+    if(v._fbId){
+      // Firebase vessels에서 삭제
+      await deleteDoc(doc(db,'vessels',v._fbId));
+    } else {
+      // BASE_VESSELS → deleted_ids에 추가
+      const uid='base_'+BASE_DATA.findIndex(d=>d.선명===v.선명);
+      const newDel=new Set(deletedIds);
+      newDel.add(uid);
+      await setDoc(doc(db,'meta','deleted_ids'),{ids:[...newDel]});
+    }
+    showToast(`🗑 "${v.선명}" 삭제됐습니다`);
+    renderVesselCompanyChips();
+    renderVesselList(document.getElementById('vesselSearchInput').value);
+  }catch(e){alert('삭제 실패: '+e.message);}
+}
+window.deleteVessel=deleteVessel;
 window.submitVesselForm=submitVesselForm;window.renderVesselList=renderVesselList;window.setVesselCompany=setVesselCompany;window.getAllVessels=getAllVessels;
 window.filterVesselSuggest=filterVesselSuggest;window.selectVessel=selectVessel;
 
