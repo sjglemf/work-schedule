@@ -571,11 +571,7 @@ function renderList(){
     if(d.선명!==prevShip){
       if(prevShip) html+=`</div><div style="height:8px"></div>`;
       const shipCount=filtered.filter(x=>x.선명===d.선명).length;
-      html+=`<div style="border-radius:12px;overflow:hidden;border:1px solid ${col.border}50">
-        <div style="background:${col.hdr};border-left:4px solid ${col.border};padding:7px 14px;display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:13px;font-weight:700;color:${col.text}">${d.선명} ${구분Badge}${imoBadge}</span>
-          <span style="font-size:11px;color:${col.border};font-weight:600">${shipCount}건</span>
-        </div>`;
+      html+=`<div style="border-radius:12px;overflow:hidden;border:1px solid ${col.border}50">`;
       prevShip=d.선명;
     }
     html+=`<div style="background:${i%2===0?col.bg:col.alt};border-left:4px solid ${col.border};padding:12px 14px;border-top:0.5px solid ${col.border}30">
@@ -991,6 +987,7 @@ async function bulkCheongguComplete(){
 }
 window.bulkCheongguComplete=bulkCheongguComplete;
 window.openVesselAdd=openVesselAdd;window.openVesselEdit=openVesselEdit;window.closeVesselForm=closeVesselForm;window.deleteVesselFromForm=deleteVesselFromForm;
+window.openVesselList=openVesselList;window.closeVesselList=closeVesselList;
 function openVesselEditByIndex(idx){
   const v = window._currentVesselList && window._currentVesselList[idx];
   if(!v) return;
