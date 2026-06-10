@@ -489,16 +489,38 @@ function applyFilters(){
   if(sort==='date_asc')filtered.sort((a,b)=>(a.날짜||'').localeCompare(b.날짜||''));
   else if(sort==='date_desc')filtered.sort((a,b)=>(b.날짜||'').localeCompare(a.날짜||''));
   else filtered.sort((a,b)=>(a.선명||'').localeCompare(b.선명||'','ko'));
-  // 입항일 임박(D-7 이내, 예정 상태) 상단 고정
+  // D-day 임박 상단 고정 - D-day 숫자 작을수록 위로
   filtered.sort((a,b)=>{
-    const da=getDday(a.상태==='예정'?a.날짜:null), db=getDday(b.상태==='예정'?b.날짜:null);
-    const aPin = da!==null && da>=0 && da<=7 && a.상태==='예정';
-    const bPin = db!==null && db>=0 && db<=7 && b.상태==='예정';
+    const da=getDday(a.상태==='예정'?a.날짜:null);
+    const db=getDday(b.상태==='예정'?b.날짜:null);
+    const aPin=da!==null&&da>=0&&da<=7;
+    const bPin=db!==null&&db>=0&&db<=7;
+    if(aPin&&bPin) return da-db;
     if(aPin&&!bPin) return -1;
     if(!aPin&&bPin) return 1;
     return 0;
   });
   updateChips();page=1;renderList();
+}
+
+const VESSEL_COLORS=[
+  {bg:'#e8f5e9',border:'#2e7d32',text:'#1b5e20',alt:'#f1f8e9',hdr:'#c8e6c9'},
+  {bg:'#e3f2fd',border:'#1565c0',text:'#0d47a1',alt:'#e8f4fd',hdr:'#bbdefb'},
+  {bg:'#f3e5f5',border:'#6a1b9a',text:'#4a148c',alt:'#f8f0fb',hdr:'#e1bee7'},
+  {bg:'#fff3e0',border:'#e65100',text:'#bf360c',alt:'#fff8f0',hdr:'#ffe0b2'},
+  {bg:'#e0f2f1',border:'#00695c',text:'#004d40',alt:'#e8f5f4',hdr:'#b2dfdb'},
+  {bg:'#fce4ec',border:'#880e4f',text:'#560027',alt:'#fdf0f5',hdr:'#f8bbd0'},
+  {bg:'#e8eaf6',border:'#283593',text:'#1a237e',alt:'#eef0fb',hdr:'#c5cae9'},
+  {bg:'#f9fbe7',border:'#558b2f',text:'#33691e',alt:'#fbfcf0',hdr:'#dcedc8'},
+];
+const vesselColorMap={};
+let colorIdx=0;
+function getVesselColor(name){
+  if(!vesselColorMap[name]){
+    vesselColorMap[name]=VESSEL_COLORS[colorIdx%VESSEL_COLORS.length];
+    colorIdx++;
+  }
+  return vesselColorMap[name];
 }
 
 function updateChips(){
@@ -517,15 +539,16 @@ function renderList(){
   const listEl=document.getElementById('list');
   if(!total){listEl.innerHTML='<div class="empty"><div class="icon">⚙️</div><p>조건에 맞는 작업이 없습니다</p></div>';document.getElementById('pager').style.display='none';return;}
   const start=(page-1)*PAGE,end=Math.min(start+PAGE,total);
-  listEl.innerHTML=filtered.slice(start,end).map((d,i)=>{
+  const pageData=filtered.slice(start,end);
+  let html='';
+  let prevShip='';
+  pageData.forEach((d,i)=>{
     const vm=getVesselMaster(d.선명);
+    const col=getVesselColor(d.선명);
     const 선박구분=vm?.선박구분||d.선박구분||'';
     const imo=vm?.imo||d.imo||'';
     const sClass='s-'+(d.상태||'');
-    const overseasTag=d.구분==='해외'?`<span class="tag t-overseas">🌐 해외</span>`:'';
-    const hagaTag=d.하가일정?`<span class="tag t-haga">📋 하가 ${d.하가일정}</span>`:'';
     const ddayBadge=d.상태==='예정'?getDdayBadge(d.날짜):'';
-    const 입항Tag=ddayBadge?`<span class="tag" style="background:#e0f2fe;color:#0369a1">⚓ ${d.날짜} ${ddayBadge}</span>`:'';
     const 청구Tag=d.청구==='청구대기'?`<span class="tag" style="background:#fce4ec;color:#c62828">💰 청구대기</span>`:d.청구==='청구완료'?`<span class="tag" style="background:#e8f5e9;color:#2e7d32">✅ 청구완료</span>`:'';
     const isPinned=d.상태==='예정'&&getDday(d.날짜)!==null&&getDday(d.날짜)>=0&&getDday(d.날짜)<=7;
     const 구분Badge=선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
@@ -534,29 +557,30 @@ function renderList(){
     const 메인GOV=vm?.메인GOV||d.메인GOV||'';
     const 발전기=vm?.발전기||d.발전기||'';
     const 발전기GOV=vm?.발전기GOV||d.발전기GOV||'';
+    const overseasTag=d.구분==='해외'?`<span class="tag t-overseas">🌐 해외</span>`:'';
+    const hagaTag=d.하가일정?`<span class="tag t-haga">📋 하가 ${d.하가일정}</span>`:'';
     let mainSec='';
     if(메인엔진||메인GOV||d.메인작업){
-      mainSec=`<div class="section"><div class="section-title">메인엔진</div><div class="engine-row">
-        ${메인엔진?`<span class="eng-model">${메인엔진}</span>`:''}
-        ${메인GOV?`<span class="eng-gov">${메인GOV}</span>`:''}
-        ${d.메인작업?`<span class="eng-work">${d.메인작업}</span>`:''}
-      </div></div>`;
+      mainSec=`<div class="section"><div class="section-title">메인엔진</div><div class="engine-row">${메인엔진?`<span class="eng-model">${메인엔진}</span>`:''} ${메인GOV?`<span class="eng-gov">${메인GOV}</span>`:''} ${d.메인작업?`<span class="eng-work">${d.메인작업}</span>`:''}</div></div>`;
     }
     let genSec='';
     if(발전기||발전기GOV||d.발전기작업){
-      genSec=`<div class="section"><div class="section-title">발전기</div><div class="engine-row">
-        ${발전기?`<span class="eng-model">${발전기}</span>`:''}
-        ${발전기GOV?`<span class="eng-gov">${발전기GOV}</span>`:''}
-        ${d.발전기작업?`<span class="eng-work">${d.발전기작업}</span>`:''}
-      </div></div>`;
+      genSec=`<div class="section"><div class="section-title">발전기</div><div class="engine-row">${발전기?`<span class="eng-model">${발전기}</span>`:''} ${발전기GOV?`<span class="eng-gov">${발전기GOV}</span>`:''} ${d.발전기작업?`<span class="eng-work">${d.발전기작업}</span>`:''}</div></div>`;
     }
     const noteBox=d.비고?`<div class="note-box"><span class="note-icon">📝</span><span class="note-text">${d.비고}</span></div>`:'';
-    return `<div class="card">
+    if(d.선명!==prevShip){
+      if(prevShip) html+=`</div><div style="height:8px"></div>`;
+      const shipCount=filtered.filter(x=>x.선명===d.선명).length;
+      html+=`<div style="border-radius:12px;overflow:hidden;border:1px solid ${col.border}50">
+        <div style="background:${col.hdr};border-left:4px solid ${col.border};padding:7px 14px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:13px;font-weight:700;color:${col.text}">${d.선명} ${구분Badge}${imoBadge}</span>
+          <span style="font-size:11px;color:${col.border};font-weight:600">${shipCount}건</span>
+        </div>`;
+      prevShip=d.선명;
+    }
+    html+=`<div style="background:${i%2===0?col.bg:col.alt};border-left:4px solid ${col.border};padding:12px 14px;border-top:0.5px solid ${col.border}30">
       <div class="card-top">
-        <div>
-          <span class="ship-name" onclick="openShipModal(${start+i})">${d.선명||'-'}</span>
-          ${구분Badge||imoBadge?`<div class="ship-badges" style="margin-top:3px">${구분Badge}${imoBadge}</div>`:''}
-        </div>
+        <span class="ship-name" onclick="openShipModal(${start+i})" style="color:${col.border}">${d.선명||'-'}</span>
         <div style="display:flex;align-items:center;gap:4px">
           <span class="status-badge ${sClass}">${d.상태||'-'}</span>
           <div class="card-btns">
@@ -566,19 +590,21 @@ function renderList(){
         </div>
       </div>
       <div class="card-meta">
-        <span class="card-date">📅 ${d.날짜||'-'}</span>
+        <span class="card-date" style="color:${col.text}">📅 ${d.날짜||'-'}</span>
         ${ddayBadge}
         <span class="sep">·</span>
-        <span>${d.선사||vm?.선사||'-'}</span>
+        <span style="color:${col.text}">${d.선사||vm?.선사||'-'}</span>
       </div>
       <div class="tags">
         <span class="tag t-place">📍 ${d.장소||'-'}</span>
         ${overseasTag}${hagaTag}${청구Tag}
       </div>
-      ${isPinned?`<div style="background:#fff7ed;border-radius:8px;padding:4px 10px;font-size:12px;color:#c2410c;font-weight:600;display:inline-block">📌 입항 임박</div>`:''}
+      ${isPinned?`<div style="background:#fff7ed;border-radius:8px;padding:3px 10px;font-size:12px;color:#c2410c;font-weight:600;display:inline-block;margin-top:4px">📌 입항 임박</div>`:''}
       ${mainSec}${genSec}${noteBox}
     </div>`;
-  }).join('');
+  });
+  if(prevShip) html+='</div>';
+  listEl.innerHTML=html;
   const totalPages=Math.ceil(total/PAGE);
   document.getElementById('pager').style.display='flex';
   document.getElementById('pgInfo').textContent=page+' / '+totalPages;
