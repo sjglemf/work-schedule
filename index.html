@@ -183,8 +183,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
       <button onclick="openPanel('발전기GOV')" style="background:#f2f2f7;border:none;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:600;color:#1c1c1e;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
         <span>발전기GOV</span><span id="filterLabel_발전기GOV" style="font-size:13px;color:#0a84ff"></span>
       </button>
-      <button id="chipCheonggu" onclick="toggleCheongguFilter()" style="background:#f2f2f7;border:none;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:600;color:#1c1c1e;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
-        <span>💰 청구미완료</span><span id="cheongguLabel" style="font-size:13px;color:#0a84ff"></span>
+      <button onclick="openPanel('청구')" style="background:#f2f2f7;border:none;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:600;color:#1c1c1e;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+        <span>💰 청구</span><span id="filterLabel_청구" style="font-size:13px;color:#0a84ff"></span>
       </button>
     </div>
     <div id="panelBody"></div>
@@ -398,7 +398,7 @@ const db = getFirestore(app);
 
 const PAGE = 20;
 let ALL_DATA=[], filtered=[], page=1, currentPanel=null;
-const sel = {상태:new Set(),구분:new Set(),메인GOV:new Set(),발전기GOV:new Set()};
+const sel = {상태:new Set(),구분:new Set(),메인GOV:new Set(),발전기GOV:new Set(),청구:new Set()};
 let OPTS={};
 let fbSchedules=[], fbVessels=[], deletedIds=new Set();
 const BASE_DATA = 
@@ -445,7 +445,7 @@ function refresh(){
 }
 
 function buildOpts(){
-  ['상태','구분','메인GOV','발전기GOV'].forEach(k=>{
+  ['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>{
     const cnt={};
     ALL_DATA.forEach(d=>{const v=d[k];if(v)cnt[v]=(cnt[v]||0)+1;});
     OPTS[k]=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
@@ -469,13 +469,6 @@ function getDdayBadge(dateStr){
   return `<span style="background:#f2f2f7;color:#3c3c43;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600">D-${d}</span>`;
 }
 
-let filterCheonggu=false;
-function toggleCheongguFilter(){
-  filterCheonggu=!filterCheonggu;
-  document.getElementById('chipCheonggu').className='chip'+(filterCheonggu?' active':'');
-  page=1;applyFilters();
-}
-window.toggleCheongguFilter=toggleCheongguFilter;
 
 function init(){
   document.getElementById('a_날짜').value=new Date().toISOString().split('T')[0];
@@ -497,8 +490,7 @@ function applyFilters(){
     if(sel.구분.size&&!sel.구분.has(d.구분))return false;
     if(sel.메인GOV.size&&!sel.메인GOV.has(d.메인GOV))return false;
     if(sel.발전기GOV.size&&!sel.발전기GOV.has(d.발전기GOV))return false;
-    if(filterCheonggu&&d.청구==='청구완료')return false;
-    if(filterCheonggu&&d.상태!=='완료')return false;
+    if(sel.청구.size&&!sel.청구.has(d.청구||''))return false;
     return true;
   });
   if(sort==='date_asc')filtered.sort((a,b)=>(a.날짜||'').localeCompare(b.날짜||''));
@@ -542,7 +534,7 @@ function updateChips(){
   const has=sel.상태.size||sel.구분.size||sel.메인GOV.size||sel.발전기GOV.size;
   document.getElementById('filterDot').className='dot'+(has?' on':'');
   const lb={상태:'상태',구분:'국내/해외',메인GOV:'메인GOV',발전기GOV:'발전기GOV'};
-  ['상태','구분','메인GOV','발전기GOV'].forEach(k=>{
+  ['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>{
     const btn=document.querySelector(`.chip[onclick="openPanel('${k}')"]`);
     if(btn){btn.className='chip'+(sel[k].size?' active':'');btn.textContent=sel[k].size?lb[k]+' '+sel[k].size:lb[k];}
   });
@@ -661,23 +653,17 @@ function resetCurrent(){
 }
 function resetAllFilters(){
   ['상태','구분','메인GOV','발전기GOV'].forEach(k=>sel[k].clear());
-  filterCheonggu=false;
-  document.getElementById('chipCheonggu').style.background='#f2f2f7';
-  document.getElementById('chipCheonggu').style.color='#1c1c1e';
+  sel['청구'].clear();
   updateFilterLabels();
   applyFilters();
 }
 function updateFilterLabels(){
-  const has=sel.상태.size||sel.구분.size||sel.메인GOV.size||sel.발전기GOV.size||filterCheonggu;
+  const has=sel.상태.size||sel.구분.size||sel.메인GOV.size||sel.발전기GOV.size||sel.청구.size;
   document.getElementById('filterDot').className='dot'+(has?' on':'');
-  ['상태','구분','메인GOV','발전기GOV'].forEach(k=>{
+  ['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>{
     const el=document.getElementById('filterLabel_'+k);
     if(el) el.textContent=sel[k].size?[...sel[k]].join(', '):'';
   });
-  const cl=document.getElementById('cheongguLabel');
-  if(cl) cl.textContent=filterCheonggu?'적용 중':'';
-  const btn=document.getElementById('chipCheonggu');
-  if(btn){btn.style.background=filterCheonggu?'#e8f2ff':'#f2f2f7';btn.style.color=filterCheonggu?'#0a84ff':'#1c1c1e';}
 }
 window.openFilterMenu=openFilterMenu;window.closeFilterMenu=closeFilterMenu;
 
@@ -1047,7 +1033,7 @@ function renderWeeklySummary(){
         <div style="font-size:16px;font-weight:800;color:#fff">${dday.length}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.8)">오늘 D-day</div>
       </div>`:''}
-      ${청구대기.length?`<div onclick="filterCheonggu=true;document.getElementById('chipCheonggu').className='chip active';applyFilters();" style="flex-shrink:0;background:#ff9f0a;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
+      ${청구대기.length?`<div onclick="sel['청구'].add('청구대기');updateFilterLabels();applyFilters();" style="flex-shrink:0;background:#ff9f0a;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
         <div style="font-size:16px;font-weight:800;color:#fff">${청구대기.length}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.8)">청구대기</div>
       </div>`:''}
