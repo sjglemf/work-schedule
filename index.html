@@ -1149,21 +1149,23 @@ window.openVesselEditByIndex=openVesselEditByIndex;
 window.deleteVessel=deleteVessel;
 
 // 모든 함수 전역 노출 (누락 방지)
-Object.assign(window,{
-  showToast,setSyncDot,getVesselMaster,refresh,buildOpts,getDday,getDdayBadge,
-  clearSearch,applyFilters,getVesselColor,updateFilterLabels,renderList,goPage,
-  openFilterMenu,closeFilterMenu,openPanel,closePanel,applyAndClose,resetCurrent,resetAllFilters,
-  openSheet,closeSheet,
-  openAddModal,closeAddModal,submitAdd,
-  filterVesselSuggest,selectVessel,
-  openEditByIdx,closeEditModal,submitEdit,
-  deleteItem,
-  openVesselList,closeVesselList,renderVesselCompanyChips,getAllVessels,setVesselCompany,renderVesselList,
-  openVesselAdd,openVesselEdit,openVesselEditByIndex,closeVesselForm,submitVesselForm,
-  openShipModal,closeShipModal,buildVesselHistory,
-  renderWeeklySummary,bulkCheongguComplete,
-  toggleSel,
-});
+// 전체 전역 노출
+[
+  'showToast','setSyncDot','getVesselMaster','refresh','buildOpts','getDday','getDdayBadge',
+  'clearSearch','applyFilters','getVesselColor','updateFilterLabels','renderList','goPage',
+  'openFilterMenu','closeFilterMenu','openPanel','closePanel','applyAndClose','resetCurrent','resetAllFilters',
+  'openSheet','closeSheet','toggleSel',
+  'openAddModal','closeAddModal','submitAdd',
+  'filterVesselSuggest','selectVessel',
+  'openEditByIdx','closeEditModal','submitEdit',
+  'deleteItem',
+  'openVesselList','closeVesselList','renderVesselCompanyChips','getAllVessels','setVesselCompany','renderVesselList',
+  'openVesselAdd','openVesselEdit','openVesselEditByIndex','closeVesselForm','submitVesselForm',
+  'deleteVessel','deleteVesselFromForm',
+  'openShipModal','closeShipModal','buildVesselHistory',
+  'renderWeeklySummary','bulkCheongguComplete',
+  'quickStatusChange','quickCheongguToggle',
+].forEach(fn => { try{ window[fn]=eval(fn); }catch(e){} });
 
 init();
 </script>
