@@ -616,7 +616,6 @@ function renderList(){
   document.getElementById('pgInfo').textContent=page+' / '+totalPages;
   document.getElementById('prevBtn').disabled=page===1;
   document.getElementById('nextBtn').disabled=page===totalPages;
-  window.scrollTo(0,0);
 }
 
 function goPage(dir){page+=dir;renderList();}
@@ -665,7 +664,6 @@ function updateFilterLabels(){
     if(el) el.textContent=sel[k].size?[...sel[k]].join(', '):'';
   });
 }
-window.openFilterMenu=openFilterMenu;window.closeFilterMenu=closeFilterMenu;
 
 // 공통 시트 열기/닫기
 function openSheet(ovId,shId){document.getElementById(ovId).classList.add('open');requestAnimationFrame(()=>document.getElementById(shId).classList.add('open'));}
@@ -730,7 +728,6 @@ async function submitAdd(){
 // 작업 수정
 function openEditByIdx(idx){
   const d=filtered[idx];if(!d)return;
-  window._editIdx=idx;
   ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','청구','비고'].forEach(k=>{
     const el=document.getElementById('e_'+k);if(el)el.value=d[k]||'';
   });
@@ -772,7 +769,6 @@ async function deleteItem(idx){
 
 // 선박 마스터 목록
 function openVesselList(){
-  window._vesselCompanyFilter='';
   renderVesselCompanyChips();
   renderVesselList('');
   openSheet('vesselListOverlay','vesselListSheet');
@@ -820,7 +816,6 @@ function getAllVessels(){
 }
 
 function setVesselCompany(company){
-  window._vesselCompanyFilter=company;
   renderVesselCompanyChips();
   renderVesselList(document.getElementById('vesselSearchInput').value);
 }
@@ -835,7 +830,6 @@ function renderVesselList(q=''){
   });
   list.sort((a,b)=>(a.선명||'').localeCompare(b.선명||'','ko'));
     const bodyEl = document.getElementById('vesselListBody');
-  window._currentVesselList = list;
   if(!list.length){
     bodyEl.innerHTML='<div class="empty"><div class="icon">🚢</div><p>선박이 없습니다</p></div>';
     return;
@@ -992,7 +986,6 @@ async function quickStatusChange(idx){
     showToast(`✅ ${next}로 변경됐습니다`);
   }catch(e){alert('변경 실패: '+e.message);}
 }
-window.quickStatusChange=quickStatusChange;
 
 // 청구 원터치 토글
 async function quickCheongguToggle(idx){
@@ -1007,7 +1000,6 @@ async function quickCheongguToggle(idx){
     showToast(`💰 ${next}로 변경됐습니다`);
   }catch(e){alert('변경 실패: '+e.message);}
 }
-window.quickCheongguToggle=quickCheongguToggle;
 
 // 이번 주 요약 위젯
 function renderWeeklySummary(){
@@ -1039,7 +1031,6 @@ function renderWeeklySummary(){
       </div>`:''}
     </div>`;
 }
-window.renderWeeklySummary=renderWeeklySummary;
 
 function buildVesselHistory(name){
   const history=[...fbSchedules,...BASE_WITH_ID.filter(b=>!deletedIds.has(b._uid))].filter(s=>s.선명===name).sort((a,b)=>(b.날짜||'').localeCompare(a.날짜||''));
@@ -1061,13 +1052,6 @@ function buildVesselHistory(name){
 function closeShipModal(){closeSheet('shipOverlay','shipModal');}
 
 // 전역 노출
-window.openPanel=openPanel;window.closePanel=closePanel;
-window.toggleSel=toggleSel;window.resetCurrent=resetCurrent;window.resetAllFilters=resetAllFilters;window.applyAndClose=applyAndClose;
-window.goPage=goPage;window.clearSearch=clearSearch;window.applyFilters=applyFilters;
-window.openAddModal=openAddModal;window.closeAddModal=closeAddModal;window.submitAdd=submitAdd;
-window.openEditByIdx=openEditByIdx;window.closeEditModal=closeEditModal;window.submitEdit=submitEdit;
-window.deleteItem=deleteItem;
-window.openShipModal=openShipModal;window.closeShipModal=closeShipModal;
 async function bulkCheongguComplete(){
   if(!confirm('완료 상태인 모든 작업을 청구완료로 일괄 변경할까요?\n(이미 청구완료인 것은 제외)'))return;
   const btn=document.getElementById('bulkCheongguBtn');
@@ -1094,9 +1078,6 @@ async function bulkCheongguComplete(){
   }catch(e){alert('오류: '+e.message);}
   btn.textContent='💰 완료건 청구완료 일괄처리';btn.disabled=false;
 }
-window.bulkCheongguComplete=bulkCheongguComplete;
-window.openVesselAdd=openVesselAdd;window.openVesselEdit=openVesselEdit;window.closeVesselForm=closeVesselForm;window.deleteVesselFromForm=deleteVesselFromForm;
-window.openVesselList=openVesselList;window.closeVesselList=closeVesselList;
 function openVesselEditByIndex(idx){
   const v = window._currentVesselList && window._currentVesselList[idx];
   if(!v) return;
@@ -1142,11 +1123,6 @@ async function deleteVesselFromForm(){
     showToast(`🗑 "${name}" 삭제됐습니다`);
   }catch(e){alert('삭제 실패: '+e.message);}
 }
-window.deleteVesselFromForm=deleteVesselFromForm;
-window.submitVesselForm=submitVesselForm;window.renderVesselList=renderVesselList;window.setVesselCompany=setVesselCompany;window.getAllVessels=getAllVessels;
-window.filterVesselSuggest=filterVesselSuggest;window.selectVessel=selectVessel;
-window.openVesselEditByIndex=openVesselEditByIndex;
-window.deleteVessel=deleteVessel;
 
 // 모든 함수 전역 노출 (누락 방지)
 // 전체 전역 노출
