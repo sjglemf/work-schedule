@@ -822,6 +822,7 @@ function getAllVessels(){
 }
 
 function setVesselCompany(company){
+  window._vesselCompanyFilter=company;
   renderVesselCompanyChips();
   renderVesselList(document.getElementById('vesselSearchInput').value);
 }
