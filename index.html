@@ -460,7 +460,8 @@ function toggleCheongguFilter(){
   page=1;applyFilters();
 }
 window.toggleCheongguFilter=toggleCheongguFilter;
-  setSyncDot('loading');
+
+function init(){
   document.getElementById('a_날짜').value=new Date().toISOString().split('T')[0];
   const inp=document.getElementById('searchInput');
   inp.addEventListener('input',()=>{
@@ -905,21 +906,24 @@ function openShipModal(idx){
     </a>
     <div style="background:#fff;border-radius:14px;padding:16px;border:0.5px solid #e5e5ea">
       <div style="font-size:12px;font-weight:700;color:#8e8e93;margin-bottom:10px">📋 작업 이력</div>
-      ${(()=>{
-        const history=[...fbSchedules,...BASE_WITH_ID.filter(b=>!deletedIds.has(b._uid))].filter(s=>s.선명===name).sort((a,b)=>(b.날짜||'').localeCompare(a.날짜||''));
-        if(!history.length) return '<div style="color:#8e8e93;font-size:13px">작업 이력 없음</div>';
-        return history.map(s=>`
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f2f2f7">
-            <div style="flex:1">
-              <div style="font-size:13px;font-weight:600">${s.날짜||'-'} <span style="color:#8e8e93;font-weight:400">${s.장소||''}</span></div>
-              <div style="font-size:12px;color:#8e8e93">${s.메인작업||''} ${s.발전기작업||''}</div>
-            </div>
-            <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;${s.상태==='완료'?'background:#e8f5e9;color:#2e7d32':s.상태==='예정'?'background:#e3f2fd;color:#1565c0':s.상태==='연기'?'background:#fff3e0;color:#e65100':'background:#fce4ec;color:#c62828'}">${s.상태||'-'}</span>
-          </div>`).join('');
-      })()}
+      ${buildVesselHistory(name)}
     </div>
   `;
   openSheet('shipOverlay','shipModal');
+}
+function buildVesselHistory(name){
+  const history=[...fbSchedules,...BASE_WITH_ID.filter(b=>!deletedIds.has(b._uid))].filter(s=>s.선명===name).sort((a,b)=>(b.날짜||'').localeCompare(a.날짜||''));
+  if(!history.length) return '<div style="color:#8e8e93;font-size:13px">작업 이력 없음</div>';
+  return history.map(s=>{
+    const bg=s.상태==='완료'?'background:#e8f5e9;color:#2e7d32':s.상태==='예정'?'background:#e3f2fd;color:#1565c0':s.상태==='연기'?'background:#fff3e0;color:#e65100':'background:#fce4ec;color:#c62828';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f2f2f7">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">${s.날짜||'-'} <span style="color:#8e8e93;font-weight:400">${s.장소||''}</span></div>
+        <div style="font-size:12px;color:#8e8e93">${s.메인작업||''} ${s.발전기작업||''}</div>
+      </div>
+      <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;${bg}">${s.상태||'-'}</span>
+    </div>`;
+  }).join('');
 }
 function closeShipModal(){closeSheet('shipOverlay','shipModal');}
 
