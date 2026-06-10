@@ -966,10 +966,6 @@ function openShipModal(idx){
        style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px;margin-bottom:8px">
       <span>🚢 KOSWEC 선박조회</span><span style="color:#0a84ff;font-size:12px">내항/외항 확인 →</span>
     </a>
-    <button onclick="kakaoShare('${name.replace(/'/g,"\\'")}','${(d.날짜||'').replace(/'/g,"\\'")}','${(d.상태||'').replace(/'/g,"\\'")}','${(d.장소||'').replace(/'/g,"\\'")}','${(d.선사||vm?.선사||'').replace(/'/g,"\\'")}')"
-      style="display:flex;align-items:center;justify-content:space-between;background:#FEE500;border:none;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;color:#000;cursor:pointer;width:100%">
-      <span>💬 카카오톡 공유</span><span>→</span>
-    </button>
     <div style="background:#fff;border-radius:14px;padding:16px;border:0.5px solid #e5e5ea">
       <div style="font-size:12px;font-weight:700;color:#8e8e93;margin-bottom:10px">📋 작업 이력</div>
       ${buildVesselHistory(name)}
@@ -1091,21 +1087,7 @@ function kakaoShareWeekly(){
   });
 }
 window.kakaoShareWeekly=kakaoShareWeekly;
-  if(!window.Kakao) return alert('카카오 SDK 로딩 중입니다. 잠시 후 다시 시도해주세요.');
-  if(!Kakao.isInitialized()) Kakao.init('c3efc1acfab3eccb3bc2a15e96a20d83');
-  const dday=getDday(status==='예정'?date:null);
-  const ddayText=dday===null?'':dday===0?' [D-day]':dday>0?` [D-${dday}]`:` [D+${Math.abs(dday)}]`;
-  Kakao.Share.sendDefault({
-    objectType:'text',
-    text:`🚢 ${name}${ddayText}\n📅 ${date} · ${company}\n📍 ${place}\n🔖 ${status}\n\n작업 스케줄: https://sjglemf.github.io/work-schedule/`,
-    link:{
-      mobileWebUrl:'https://sjglemf.github.io/work-schedule/',
-      webUrl:'https://sjglemf.github.io/work-schedule/',
-    },
-  });
-}
 
-// 전역 노출
 async function bulkCheongguComplete(){
   if(!confirm('완료 상태인 모든 작업을 청구완료로 일괄 변경할까요?\n(이미 청구완료인 것은 제외)'))return;
   const btn=document.getElementById('bulkCheongguBtn');
