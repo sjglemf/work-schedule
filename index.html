@@ -135,13 +135,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   </div>
 </div>
 
-<div class="filter-row">
-  <button class="chip" onclick="openPanel('상태')">상태</button>
-  <button class="chip" onclick="openPanel('구분')">국내/해외</button>
-  <button class="chip" onclick="openPanel('메인GOV')">메인GOV</button>
-  <button class="chip" onclick="openPanel('발전기GOV')">발전기GOV</button>
-  <button class="chip" id="chipCheonggu" onclick="toggleCheongguFilter()">💰 청구미완료</button>
-</div>
+
 
 <div class="info-bar">
   <span><strong id="resultCount">-</strong>건</span>
@@ -165,20 +159,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   <button class="pg-btn" id="nextBtn" onclick="goPage(1)">다음 ▶</button>
 </div>
 
-<button class="filter-fab" onclick="openPanel('상태')">
+<button class="filter-fab" onclick="openFilterMenu()">
   <span>필터</span>
   <span class="dot" id="filterDot"></span>
 </button>
 
 <!-- 필터 패널 -->
-<div class="overlay" id="filterOverlay" onclick="closePanel()"></div>
+<div class="overlay" id="filterOverlay" onclick="closeFilterMenu()"></div>
 <div class="bottom-sheet" id="filterPanel">
   <div class="bs-handle"></div>
-  <div class="bs-header"><h2 id="panelTitle">필터</h2><button class="bs-close" onclick="closePanel()">✕</button></div>
-  <div class="bs-body" id="panelBody"></div>
+  <div class="bs-header"><h2>필터</h2><button class="bs-close" onclick="closeFilterMenu()">✕</button></div>
+  <div class="bs-body">
+    <div style="display:flex;flex-direction:column;gap:8px;padding:8px 0">
+      <button onclick="openPanel('상태')" style="background:#f2f2f7;border:none;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:600;color:#1c1c1e;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+        <span>상태</span><span id="filterLabel_상태" style="font-size:13px;color:#0a84ff"></span>
+      </button>
+      <button onclick="openPanel('구분')" style="background:#f2f2f7;border:none;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:600;color:#1c1c1e;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+        <span>국내/해외</span><span id="filterLabel_구분" style="font-size:13px;color:#0a84ff"></span>
+      </button>
+      <button onclick="openPanel('메인GOV')" style="background:#f2f2f7;border:none;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:600;color:#1c1c1e;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+        <span>메인GOV</span><span id="filterLabel_메인GOV" style="font-size:13px;color:#0a84ff"></span>
+      </button>
+      <button onclick="openPanel('발전기GOV')" style="background:#f2f2f7;border:none;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:600;color:#1c1c1e;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+        <span>발전기GOV</span><span id="filterLabel_발전기GOV" style="font-size:13px;color:#0a84ff"></span>
+      </button>
+      <button id="chipCheonggu" onclick="toggleCheongguFilter()" style="background:#f2f2f7;border:none;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:600;color:#1c1c1e;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+        <span>💰 청구미완료</span><span id="cheongguLabel" style="font-size:13px;color:#0a84ff"></span>
+      </button>
+    </div>
+    <div id="panelBody"></div>
+  </div>
   <div class="bs-footer">
-    <button class="btn-reset" onclick="resetCurrent()">초기화</button>
-    <button class="btn-primary" onclick="applyAndClose()">적용</button>
+    <button class="btn-reset" onclick="resetAllFilters()">전체 초기화</button>
+    <button class="btn-primary" onclick="closeFilterMenu()">닫기</button>
   </div>
 </div>
 
@@ -502,7 +515,7 @@ function applyFilters(){
     if(!aPin&&bPin) return 1;
     return 0;
   });
-  updateChips();page=1;renderList();
+  updateFilterLabels();page=1;renderList();
 }
 
 const VESSEL_COLORS=[
@@ -617,18 +630,56 @@ function renderList(){
 function goPage(dir){page+=dir;renderList();}
 
 // 필터
+function openFilterMenu(){openSheet('filterOverlay','filterPanel');}
+function closeFilterMenu(){
+  // 서브패널 닫기
+  document.getElementById('panelBody').innerHTML='';
+  closeSheet('filterOverlay','filterPanel');
+}
 function openPanel(type){
   currentPanel=type;
   const lb={상태:'상태 선택',구분:'국내/해외 선택',메인GOV:'메인 GOV 선택',발전기GOV:'발전기 GOV 선택'};
-  document.getElementById('panelTitle').textContent=lb[type]||type;
-  document.getElementById('panelBody').innerHTML=`<div class="check-grid">${(OPTS[type]||[]).map(([v,c])=>`
-    <button class="check-chip${sel[type].has(v)?' active':''}" onclick="toggleSel('${type}','${v}',this)">${v}<span class="cnt"> ${c}</span></button>`).join('')}</div>`;
-  openSheet('filterOverlay','filterPanel');
+  document.getElementById('panelBody').innerHTML=`
+    <div style="margin-top:12px;border-top:0.5px solid #e5e5ea;padding-top:12px">
+      <div style="font-size:13px;font-weight:700;color:#8e8e93;margin-bottom:8px">${lb[type]||type}</div>
+      <div class="check-grid">${(OPTS[type]||[]).map(([v,c])=>`
+        <button class="check-chip${sel[type].has(v)?' active':''}" onclick="toggleSel('${type}','${v}',this)">${v}<span class="cnt"> ${c}</span></button>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn-reset" onclick="resetCurrent()" style="flex:1;padding:10px">초기화</button>
+        <button class="btn-primary" onclick="applyAndClose()" style="flex:2;padding:10px">적용</button>
+      </div>
+    </div>`;
 }
-function closePanel(){closeSheet('filterOverlay','filterPanel');}
-function toggleSel(type,val,el){sel[type].has(val)?(sel[type].delete(val),el.classList.remove('active')):(sel[type].add(val),el.classList.add('active'));}
-function resetCurrent(){if(currentPanel){sel[currentPanel].clear();document.querySelectorAll('.check-chip.active').forEach(e=>e.classList.remove('active'));}}
+function closePanel(){
+  document.getElementById('panelBody').innerHTML='';
+  updateFilterLabels();
+}
 function applyAndClose(){closePanel();applyFilters();}
+function resetCurrent(){
+  if(currentPanel){sel[currentPanel].clear();document.querySelectorAll('.check-chip.active').forEach(e=>e.classList.remove('active'));}
+}
+function resetAllFilters(){
+  ['상태','구분','메인GOV','발전기GOV'].forEach(k=>sel[k].clear());
+  filterCheonggu=false;
+  document.getElementById('chipCheonggu').style.background='#f2f2f7';
+  document.getElementById('chipCheonggu').style.color='#1c1c1e';
+  updateFilterLabels();
+  applyFilters();
+}
+function updateFilterLabels(){
+  const has=sel.상태.size||sel.구분.size||sel.메인GOV.size||sel.발전기GOV.size||filterCheonggu;
+  document.getElementById('filterDot').className='dot'+(has?' on':'');
+  ['상태','구분','메인GOV','발전기GOV'].forEach(k=>{
+    const el=document.getElementById('filterLabel_'+k);
+    if(el) el.textContent=sel[k].size?[...sel[k]].join(', '):'';
+  });
+  const cl=document.getElementById('cheongguLabel');
+  if(cl) cl.textContent=filterCheonggu?'적용 중':'';
+  const btn=document.getElementById('chipCheonggu');
+  if(btn){btn.style.background=filterCheonggu?'#e8f2ff':'#f2f2f7';btn.style.color=filterCheonggu?'#0a84ff':'#1c1c1e';}
+}
+window.openFilterMenu=openFilterMenu;window.closeFilterMenu=closeFilterMenu;
 
 // 공통 시트 열기/닫기
 function openSheet(ovId,shId){document.getElementById(ovId).classList.add('open');requestAnimationFrame(()=>document.getElementById(shId).classList.add('open'));}
@@ -1025,7 +1076,7 @@ function closeShipModal(){closeSheet('shipOverlay','shipModal');}
 
 // 전역 노출
 window.openPanel=openPanel;window.closePanel=closePanel;
-window.toggleSel=toggleSel;window.resetCurrent=resetCurrent;window.applyAndClose=applyAndClose;
+window.toggleSel=toggleSel;window.resetCurrent=resetCurrent;window.resetAllFilters=resetAllFilters;window.applyAndClose=applyAndClose;
 window.goPage=goPage;window.clearSearch=clearSearch;window.applyFilters=applyFilters;
 window.openAddModal=openAddModal;window.closeAddModal=closeAddModal;window.submitAdd=submitAdd;
 window.openEditByIdx=openEditByIdx;window.closeEditModal=closeEditModal;window.submitEdit=submitEdit;
