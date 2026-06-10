@@ -576,7 +576,10 @@ function renderList(){
     }
     html+=`<div style="background:${i%2===0?col.bg:col.alt};border-left:4px solid ${col.border};padding:12px 14px;border-top:0.5px solid ${col.border}30">
       <div class="card-top">
-        <span class="ship-name" onclick="openShipModal(${start+i})" style="color:${col.border}">${d.선명||'-'}</span>
+        <div>
+          <span class="ship-name" onclick="openShipModal(${start+i})" style="color:${col.border}">${d.선명||'-'}</span>
+          ${구분Badge||imoBadge?`<div class="ship-badges" style="margin-top:3px">${구분Badge}${imoBadge}</div>`:''}
+        </div>
         <div style="display:flex;align-items:center;gap:4px">
           <span class="status-badge ${sClass}">${d.상태||'-'}</span>
           <div class="card-btns">
@@ -584,6 +587,7 @@ function renderList(){
             <button class="del-btn" onclick="deleteItem(${start+i})">🗑</button>
           </div>
         </div>
+      </div>
       </div>
       <div class="card-meta">
         <span class="card-date" style="color:${col.text}">📅 ${d.날짜||'-'}</span>
