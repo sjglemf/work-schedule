@@ -1145,6 +1145,25 @@ async function deleteVesselFromForm(){
 window.deleteVesselFromForm=deleteVesselFromForm;
 window.submitVesselForm=submitVesselForm;window.renderVesselList=renderVesselList;window.setVesselCompany=setVesselCompany;window.getAllVessels=getAllVessels;
 window.filterVesselSuggest=filterVesselSuggest;window.selectVessel=selectVessel;
+window.openVesselEditByIndex=openVesselEditByIndex;
+window.deleteVessel=deleteVessel;
+
+// 모든 함수 전역 노출 (누락 방지)
+Object.assign(window,{
+  showToast,setSyncDot,getVesselMaster,refresh,buildOpts,getDday,getDdayBadge,
+  clearSearch,applyFilters,getVesselColor,updateFilterLabels,renderList,goPage,
+  openFilterMenu,closeFilterMenu,openPanel,closePanel,applyAndClose,resetCurrent,resetAllFilters,
+  openSheet,closeSheet,
+  openAddModal,closeAddModal,submitAdd,
+  filterVesselSuggest,selectVessel,
+  openEditByIdx,closeEditModal,submitEdit,
+  deleteItem,
+  openVesselList,closeVesselList,renderVesselCompanyChips,getAllVessels,setVesselCompany,renderVesselList,
+  openVesselAdd,openVesselEdit,openVesselEditByIndex,closeVesselForm,submitVesselForm,
+  openShipModal,closeShipModal,buildVesselHistory,
+  renderWeeklySummary,bulkCheongguComplete,
+  toggleSel,
+});
 
 init();
 </script>
