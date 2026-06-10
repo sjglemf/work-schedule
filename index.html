@@ -375,8 +375,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 <div class="overlay" id="shipOverlay" onclick="closeShipModal()"></div>
 <div class="bottom-sheet" id="shipModal" style="max-height:75vh">
 
-<!-- 지도 모달 -->
-<div class="overlay" id="mapOverlay" onclick="closeMapModal()"></div>
 <div class="bottom-sheet" id="mapModal" style="max-height:85vh">
   <div class="bs-handle"></div>
   <div class="bs-header"><h2 id="mapTitle">🗺️ 선박 위치</h2><button class="bs-close" onclick="closeMapModal()">✕</button></div>
@@ -612,7 +610,6 @@ function renderList(){
           <span class="status-badge ${sClass}" >${d.상태||'-'}</span>
           <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
           <button class="del-btn" onclick="deleteItem(${start+i})">🗑</button>
-          ${imo?`<button class="edit-btn" onclick="openMapModal('${imo}','${(d.선명||'').replace(/'/g,"\\'")}')">🗺️</button>`:''}
         </div>
       </div>
       <div class="tags" style="margin-top:4px">
@@ -1050,7 +1047,9 @@ function renderWeeklySummary(){
         </svg>
       </button>
     </div>`;
+  openSheet('shipOverlay','shipModal');
 }
+function closeShipModal(){closeSheet('shipOverlay','shipModal');}
 
 function buildVesselHistory(name){
   const history=[...fbSchedules,...BASE_WITH_ID.filter(b=>!deletedIds.has(b._uid))].filter(s=>s.선명===name).sort((a,b)=>(b.날짜||'').localeCompare(a.날짜||''));
@@ -1069,24 +1068,6 @@ function buildVesselHistory(name){
     </div>`;
   }).join('');
 }
-function openMapModal(imo, name){
-  document.getElementById('mapTitle').textContent='🗺️ '+name;
-  document.getElementById('mapBody').innerHTML=`
-    <div style="width:100%;height:60vh">
-      <script type="text/javascript">
-        var width="100%";
-        var height="100%";
-        var zoom=10;
-        var names=true;
-        var imo="${imo}";
-        var show_track=true;
-      <\/script>
-      <script type="text/javascript" src="https://www.vesselfinder.com/aismap.js"><\/script>
-    </div>`;
-  openSheet('mapOverlay','mapModal');
-}
-function closeMapModal(){closeSheet('mapOverlay','mapModal');}
-window.openMapModal=openMapModal;window.closeMapModal=closeMapModal;
 
 function kakaoShareWeekly(){
   if(!window.Kakao) return alert('카카오 SDK 로딩 중입니다. 잠시 후 다시 시도해주세요.');
