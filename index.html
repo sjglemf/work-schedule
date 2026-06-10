@@ -574,28 +574,27 @@ function renderList(){
       html+=`<div style="border-radius:12px;overflow:hidden;border:1px solid ${col.border}50">`;
       prevShip=d.선명;
     }
-    html+=`<div style="background:${i%2===0?col.bg:col.alt};border-left:4px solid ${col.border};padding:12px 14px;border-top:0.5px solid ${col.border}30">
-      <div class="card-top">
-        <div>
-          <span class="ship-name" onclick="openShipModal(${start+i})" style="color:${col.border}">${d.선명||'-'}</span>
-          ${구분Badge||imoBadge?`<div class="ship-badges" style="margin-top:3px">${구분Badge}${imoBadge}</div>`:''}
-        </div>
-        <div style="display:flex;align-items:center;gap:4px">
-          <span class="status-badge ${sClass}">${d.상태||'-'}</span>
-          <div class="card-btns">
-            <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
-            <button class="del-btn" onclick="deleteItem(${start+i})">🗑</button>
+        html+=`<div style="background:${i%2===0?col.bg:col.alt};border-left:4px solid ${col.border};padding:12px 14px;border-top:0.5px solid ${col.border}30">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:5px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+            <span class="ship-name" onclick="openShipModal(${start+i})" style="color:${col.border};font-size:16px;font-weight:700;cursor:pointer">${d.선명||'-'}</span>
+            ${구분Badge}${imoBadge}
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap">
+            <span style="font-size:13px;font-weight:700;color:${col.text}">📅 ${d.날짜||'-'}</span>
+            ${ddayBadge}
+            <span style="color:#c7c7cc;font-size:12px">·</span>
+            <span style="font-size:13px;color:${col.text}">${d.선사||vm?.선사||'-'}</span>
           </div>
         </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+          <span class="status-badge ${sClass}">${d.상태||'-'}</span>
+          <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
+          <button class="del-btn" onclick="deleteItem(${start+i})">🗑</button>
+        </div>
       </div>
-      </div>
-      <div class="card-meta">
-        <span class="card-date" style="color:${col.text}">📅 ${d.날짜||'-'}</span>
-        ${ddayBadge}
-        <span class="sep">·</span>
-        <span style="color:${col.text}">${d.선사||vm?.선사||'-'}</span>
-      </div>
-      <div class="tags">
+      <div class="tags" style="margin-top:4px">
         <span class="tag t-place">📍 ${d.장소||'-'}</span>
         ${overseasTag}${hagaTag}${청구Tag}
       </div>
