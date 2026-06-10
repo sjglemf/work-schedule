@@ -728,6 +728,7 @@ async function submitAdd(){
 // 작업 수정
 function openEditByIdx(idx){
   const d=filtered[idx];if(!d)return;
+  window._editIdx=idx;
   ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','청구','비고'].forEach(k=>{
     const el=document.getElementById('e_'+k);if(el)el.value=d[k]||'';
   });
@@ -837,7 +838,7 @@ function renderVesselList(q=''){
   bodyEl.innerHTML = list.map((v,i)=>{
     const 구분Badge=v.선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:v.선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
     const imoBadge=v.imo?`<span class="b-imo">IMO ${v.imo}</span>`:'';
-    return `<div class="vessel-item" data-idx="${i}">
+    return `<div class="vessel-item" onclick="openVesselEditByIndex(${i})" style="cursor:pointer">
       <div class="vessel-info" style="flex:1;min-width:0">
         <div class="vessel-name">${v.선명}</div>
         <div class="vessel-sub">${v.선사||'-'} ${v.메인엔진?'· '+v.메인엔진:''}</div>
@@ -845,13 +846,6 @@ function renderVesselList(q=''){
       <div class="vessel-badges">${구분Badge}${imoBadge}</div>
     </div>`;
   }).join('');
-  // 이벤트 위임으로 클릭 처리
-  bodyEl.onclick = function(e){
-    const item = e.target.closest('.vessel-item');
-    if(!item) return;
-    const idx = parseInt(item.dataset.idx);
-    openVesselEditByIndex(idx);
-  };
 }
 
 // 선박 등록
