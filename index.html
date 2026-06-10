@@ -496,13 +496,15 @@ function applyFilters(){
   if(sort==='date_asc')filtered.sort((a,b)=>(a.날짜||'').localeCompare(b.날짜||''));
   else if(sort==='date_desc')filtered.sort((a,b)=>(b.날짜||'').localeCompare(a.날짜||''));
   else filtered.sort((a,b)=>(a.선명||'').localeCompare(b.선명||'','ko'));
-  // D-day 임박 상단 고정 - D-day 숫자 작을수록 위로
+  // 입항/출항 임박 상단 고정
   filtered.sort((a,b)=>{
     const da=getDday(a.상태==='예정'?a.날짜:null);
     const db=getDday(b.상태==='예정'?b.날짜:null);
-    const aPin=da!==null&&da>=0&&da<=7;
-    const bPin=db!==null&&db>=0&&db<=7;
-    if(aPin&&bPin) return da-db;
+    // D+n ~ D-day: 출항 임박 (da<=0)
+    // D-1 ~ D-7: 입항 임박 (1<=da<=7)
+    const aPin=da!==null&&da<=7;
+    const bPin=db!==null&&db<=7;
+    if(aPin&&bPin) return da-db; // D-day 작은 것 먼저
     if(aPin&&!bPin) return -1;
     if(!aPin&&bPin) return 1;
     return 0;
@@ -557,7 +559,9 @@ function renderList(){
     const sClass='s-'+(d.상태||'');
     const ddayBadge=d.상태==='예정'?getDdayBadge(d.날짜):'';
     const 청구Tag=d.청구==='청구대기'?`<span class="tag" style="background:#fce4ec;color:#c62828">💰 청구대기</span>`:d.청구==='청구완료'?`<span class="tag" style="background:#e8f5e9;color:#2e7d32">✅ 청구완료</span>`:'';
-    const isPinned=d.상태==='예정'&&getDday(d.날짜)!==null&&getDday(d.날짜)>=0&&getDday(d.날짜)<=7;
+    const dday=getDday(d.날짜);
+    const isArrivalImminent=d.상태==='예정'&&dday!==null&&dday>=1&&dday<=7;
+    const isDepartureImminent=d.상태==='예정'&&dday!==null&&dday<=0;
     const 구분Badge=선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
     const imoBadge=imo?`<span class="b-imo">IMO ${imo}</span>`:'';
     const 메인엔진=vm?.메인엔진||d.메인엔진||'';
@@ -605,7 +609,8 @@ function renderList(){
         <span class="tag t-place">📍 ${d.장소||'-'}</span>
         ${overseasTag}${hagaTag}${청구Tag}
       </div>
-      ${isPinned?`<div style="background:#fff7ed;border-radius:8px;padding:3px 10px;font-size:12px;color:#c2410c;font-weight:600;display:inline-block;margin-top:4px">🚢 출항 임박</div>`:''}
+      ${isArrivalImminent?`<div style="background:#eff6ff;border-radius:8px;padding:3px 10px;font-size:12px;color:#1d4ed8;font-weight:600;display:inline-block;margin-top:4px">🚢 입항 임박</div>`:''}
+      ${isDepartureImminent?`<div style="background:#fff7ed;border-radius:8px;padding:3px 10px;font-size:12px;color:#c2410c;font-weight:600;display:inline-block;margin-top:4px">🚢 출항 임박</div>`:''}
       ${mainSec}${genSec}${noteBox}
     </div>`;
   });
