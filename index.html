@@ -47,7 +47,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .del-btn:active{color:#ff375f}
 .card-meta{display:flex;align-items:center;gap:6px;font-size:13px;color:#3c3c43;flex-wrap:wrap}
 .card-meta .sep{color:#c7c7cc}
-.card-date{font-size:13px;color:#8e8e93;font-weight:500}
+.card-date{font-size:14px;color:#1c1c1e;font-weight:700}
 .section{margin-top:5px}
 .section-title{font-size:11px;font-weight:700;color:#8e8e93;letter-spacing:.5px;margin-bottom:4px}
 .engine-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -143,11 +143,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 
 <div class="info-bar">
   <span><strong id="resultCount">-</strong>건</span>
-  <select class="sort-select" id="sortSel" onchange="applyFilters()">
-    <option value="date_desc">최신순</option>
-    <option value="date_asc">오래된순</option>
-    <option value="name">선명순</option>
-  </select>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button id="bulkCheongguBtn" onclick="bulkCheongguComplete()" style="background:none;border:none;font-size:12px;color:#8e8e93;cursor:pointer;padding:0">💰 완료건 청구완료 일괄처리</button>
+    <select class="sort-select" id="sortSel" onchange="applyFilters()">
+      <option value="date_desc">최신순</option>
+      <option value="date_asc">오래된순</option>
+      <option value="name">선명순</option>
+    </select>
+  </div>
 </div>
 
 <div class="list" id="list">
@@ -218,7 +221,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
     <div class="form-divider">📋 기타</div>
     <div class="form-row">
       <div class="form-group"><label>하가일정</label><input type="date" class="form-input" id="a_하가일정"></div>
-      <div class="form-group"><label>입항일</label><input type="date" class="form-input" id="a_입항일"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>청구 여부</label>
@@ -272,7 +274,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
     <div class="form-divider">📋 기타</div>
     <div class="form-row">
       <div class="form-group"><label>하가일정</label><input type="date" class="form-input" id="e_하가일정"></div>
-      <div class="form-group"><label>입항일</label><input type="date" class="form-input" id="e_입항일"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>청구 여부</label>
@@ -490,7 +491,7 @@ function applyFilters(){
   else filtered.sort((a,b)=>(a.선명||'').localeCompare(b.선명||'','ko'));
   // 입항일 임박(D-7 이내, 예정 상태) 상단 고정
   filtered.sort((a,b)=>{
-    const da=getDday(a.입항일), db=getDday(b.입항일);
+    const da=getDday(a.상태==='예정'?a.날짜:null), db=getDday(b.상태==='예정'?b.날짜:null);
     const aPin = da!==null && da>=0 && da<=7 && a.상태==='예정';
     const bPin = db!==null && db>=0 && db<=7 && b.상태==='예정';
     if(aPin&&!bPin) return -1;
@@ -523,10 +524,10 @@ function renderList(){
     const sClass='s-'+(d.상태||'');
     const overseasTag=d.구분==='해외'?`<span class="tag t-overseas">🌐 해외</span>`:'';
     const hagaTag=d.하가일정?`<span class="tag t-haga">📋 하가 ${d.하가일정}</span>`:'';
-    const ddayBadge=getDdayBadge(d.입항일);
-    const 입항Tag=d.입항일?`<span class="tag" style="background:#e0f2fe;color:#0369a1">⚓ 입항 ${d.입항일} ${ddayBadge}</span>`:'';
+    const ddayBadge=d.상태==='예정'?getDdayBadge(d.날짜):'';
+    const 입항Tag=ddayBadge?`<span class="tag" style="background:#e0f2fe;color:#0369a1">⚓ ${d.날짜} ${ddayBadge}</span>`:'';
     const 청구Tag=d.청구==='청구대기'?`<span class="tag" style="background:#fce4ec;color:#c62828">💰 청구대기</span>`:d.청구==='청구완료'?`<span class="tag" style="background:#e8f5e9;color:#2e7d32">✅ 청구완료</span>`:'';
-    const isPinned=getDday(d.입항일)!==null&&getDday(d.입항일)>=0&&getDday(d.입항일)<=7&&d.상태==='예정';
+    const isPinned=d.상태==='예정'&&getDday(d.날짜)!==null&&getDday(d.날짜)>=0&&getDday(d.날짜)<=7;
     const 구분Badge=선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
     const imoBadge=imo?`<span class="b-imo">IMO ${imo}</span>`:'';
     const 메인엔진=vm?.메인엔진||d.메인엔진||'';
@@ -566,12 +567,13 @@ function renderList(){
       </div>
       <div class="card-meta">
         <span class="card-date">📅 ${d.날짜||'-'}</span>
+        ${ddayBadge}
         <span class="sep">·</span>
         <span>${d.선사||vm?.선사||'-'}</span>
       </div>
       <div class="tags">
         <span class="tag t-place">📍 ${d.장소||'-'}</span>
-        ${overseasTag}${hagaTag}${입항Tag}${청구Tag}
+        ${overseasTag}${hagaTag}${청구Tag}
       </div>
       ${isPinned?`<div style="background:#fff7ed;border-radius:8px;padding:4px 10px;font-size:12px;color:#c2410c;font-weight:600;display:inline-block">📌 입항 임박</div>`:''}
       ${mainSec}${genSec}${noteBox}
@@ -648,13 +650,13 @@ async function submitAdd(){
       날짜,선명,선사:ga('a_선사'),장소:ga('a_장소'),구분:ga('a_구분')||'국내',상태:ga('a_상태')||'예정',
       메인엔진:ga('a_메인엔진'),메인GOV:ga('a_메인GOV'),메인작업:ga('a_메인작업'),
       발전기:ga('a_발전기'),발전기GOV:ga('a_발전기GOV'),발전기작업:ga('a_발전기작업'),
-      하가일정:ga('a_하가일정'),입항일:ga('a_입항일'),청구:ga('a_청구'),비고:ga('a_비고'),createdAt:new Date().toISOString()
+      하가일정:ga('a_하가일정'),청구:ga('a_청구'),비고:ga('a_비고'),createdAt:new Date().toISOString()
     });
     ['선명','선사','장소','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','비고'].forEach(k=>document.getElementById('a_'+k).value='');
     document.getElementById('a_상태').value='예정';document.getElementById('a_구분').value='국내';
     document.getElementById('a_날짜').value=new Date().toISOString().split('T')[0];
     document.getElementById('a_하가일정').value='';
-    document.getElementById('a_입항일').value='';
+    
     document.getElementById('a_청구').value='';
     closeAddModal();showToast(`✅ "${선명}" 추가됐습니다!`);
   }catch(e){alert('저장 실패: '+e.message);}
@@ -665,7 +667,7 @@ async function submitAdd(){
 function openEditByIdx(idx){
   const d=filtered[idx];if(!d)return;
   window._editIdx=idx;
-  ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','입항일','청구','비고'].forEach(k=>{
+  ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','청구','비고'].forEach(k=>{
     const el=document.getElementById('e_'+k);if(el)el.value=d[k]||'';
   });
   openSheet('editOverlay','editModal');
@@ -680,7 +682,7 @@ async function submitEdit(){
   const updated={날짜,선명,선사:ge('e_선사'),장소:ge('e_장소'),구분:ge('e_구분')||'국내',상태:ge('e_상태')||'예정',
     메인엔진:ge('e_메인엔진'),메인GOV:ge('e_메인GOV'),메인작업:ge('e_메인작업'),
     발전기:ge('e_발전기'),발전기GOV:ge('e_발전기GOV'),발전기작업:ge('e_발전기작업'),
-    하가일정:ge('e_하가일정'),입항일:ge('e_입항일'),청구:ge('e_청구'),비고:ge('e_비고')};
+    하가일정:ge('e_하가일정'),청구:ge('e_청구'),비고:ge('e_비고')};
   const btn=document.getElementById('editSubmitBtn');btn.textContent='저장 중...';btn.disabled=true;
   try{
     if(d._fbId){await updateDoc(doc(db,'schedules',d._fbId),updated);}
@@ -935,7 +937,33 @@ window.openAddModal=openAddModal;window.closeAddModal=closeAddModal;window.submi
 window.openEditByIdx=openEditByIdx;window.closeEditModal=closeEditModal;window.submitEdit=submitEdit;
 window.deleteItem=deleteItem;
 window.openShipModal=openShipModal;window.closeShipModal=closeShipModal;
-window.openVesselList=openVesselList;window.closeVesselList=closeVesselList;
+async function bulkCheongguComplete(){
+  if(!confirm('완료 상태인 모든 작업을 청구완료로 일괄 변경할까요?\n(이미 청구완료인 것은 제외)'))return;
+  const btn=document.getElementById('bulkCheongguBtn');
+  btn.textContent='처리 중...';btn.disabled=true;
+  let count=0;
+  try{
+    // 1. Firebase schedules에서 완료이고 청구완료 아닌 것
+    const fbTargets=fbSchedules.filter(s=>s.상태==='완료'&&s.청구!=='청구완료');
+    await Promise.all(fbTargets.map(s=>updateDoc(doc(db,'schedules',s._fbId),{청구:'청구완료'})));
+    count+=fbTargets.length;
+    // 2. BASE_DATA에서 완료이고 deleted_ids에 없는 것 → Firebase로 이동하며 청구완료
+    const baseTargets=BASE_WITH_ID.filter(d=>d.상태==='완료'&&!deletedIds.has(d._uid));
+    if(baseTargets.length>0){
+      const newDel=new Set(deletedIds);
+      baseTargets.forEach(d=>newDel.add(d._uid));
+      const addOps=baseTargets.map(d=>{
+        const {_uid, _added, ...clean} = d;
+        return addDoc(collection(db,'schedules'),{...clean, 청구:'청구완료', createdAt:d.날짜||new Date().toISOString()});
+      });
+      await Promise.all([setDoc(doc(db,'meta','deleted_ids'),{ids:[...newDel]}),...addOps]);
+      count+=baseTargets.length;
+    }
+    showToast(`✅ ${count}건 청구완료 처리됐습니다!`);
+  }catch(e){alert('오류: '+e.message);}
+  btn.textContent='💰 완료건 청구완료 일괄처리';btn.disabled=false;
+}
+window.bulkCheongguComplete=bulkCheongguComplete;
 window.openVesselAdd=openVesselAdd;window.openVesselEdit=openVesselEdit;window.closeVesselForm=closeVesselForm;window.deleteVesselFromForm=deleteVesselFromForm;
 function openVesselEditByIndex(idx){
   const v = window._currentVesselList && window._currentVesselList[idx];
