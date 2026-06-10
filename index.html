@@ -138,6 +138,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   <button class="chip" onclick="openPanel('구분')">국내/해외</button>
   <button class="chip" onclick="openPanel('메인GOV')">메인GOV</button>
   <button class="chip" onclick="openPanel('발전기GOV')">발전기GOV</button>
+  <button class="chip" id="chipCheonggu" onclick="toggleCheongguFilter()">💰 청구미완료</button>
 </div>
 
 <div class="info-bar">
@@ -217,6 +218,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
     <div class="form-divider">📋 기타</div>
     <div class="form-row">
       <div class="form-group"><label>하가일정</label><input type="date" class="form-input" id="a_하가일정"></div>
+      <div class="form-group"><label>입항일</label><input type="date" class="form-input" id="a_입항일"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>청구 여부</label>
+        <select class="form-select" id="a_청구">
+          <option value="">-</option>
+          <option value="청구대기">청구대기</option>
+          <option value="청구완료">청구완료</option>
+        </select>
+      </div>
       <div class="form-group" style="opacity:0"></div>
     </div>
     <div class="form-group"><label>비고</label><input type="text" class="form-input" id="a_비고" placeholder="특이사항 입력"></div>
@@ -261,6 +272,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
     <div class="form-divider">📋 기타</div>
     <div class="form-row">
       <div class="form-group"><label>하가일정</label><input type="date" class="form-input" id="e_하가일정"></div>
+      <div class="form-group"><label>입항일</label><input type="date" class="form-input" id="e_입항일"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>청구 여부</label>
+        <select class="form-select" id="e_청구">
+          <option value="">-</option>
+          <option value="청구대기">청구대기</option>
+          <option value="청구완료">청구완료</option>
+        </select>
+      </div>
       <div class="form-group" style="opacity:0"></div>
     </div>
     <div class="form-group"><label>비고</label><input type="text" class="form-input" id="e_비고"></div>
@@ -415,7 +436,30 @@ function buildOpts(){
   });
 }
 
-function init(){
+function getDday(dateStr){
+  if(!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(dateStr); target.setHours(0,0,0,0);
+  return Math.floor((target-today)/(1000*60*60*24));
+}
+
+function getDdayBadge(dateStr){
+  const d = getDday(dateStr);
+  if(d===null) return '';
+  if(d<0) return `<span style="background:#f2f2f7;color:#8e8e93;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600">D+${Math.abs(d)}</span>`;
+  if(d===0) return `<span style="background:#ff375f;color:#fff;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:700">D-day</span>`;
+  if(d<=3) return `<span style="background:#ff9f0a;color:#fff;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:700">D-${d}</span>`;
+  if(d<=7) return `<span style="background:#fde68a;color:#92400e;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:700">D-${d}</span>`;
+  return `<span style="background:#f2f2f7;color:#3c3c43;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600">D-${d}</span>`;
+}
+
+let filterCheonggu=false;
+function toggleCheongguFilter(){
+  filterCheonggu=!filterCheonggu;
+  document.getElementById('chipCheonggu').className='chip'+(filterCheonggu?' active':'');
+  page=1;applyFilters();
+}
+window.toggleCheongguFilter=toggleCheongguFilter;
   setSyncDot('loading');
   document.getElementById('a_날짜').value=new Date().toISOString().split('T')[0];
   const inp=document.getElementById('searchInput');
@@ -436,11 +480,22 @@ function applyFilters(){
     if(sel.구분.size&&!sel.구분.has(d.구분))return false;
     if(sel.메인GOV.size&&!sel.메인GOV.has(d.메인GOV))return false;
     if(sel.발전기GOV.size&&!sel.발전기GOV.has(d.발전기GOV))return false;
+    if(filterCheonggu&&d.청구==='청구완료')return false;
+    if(filterCheonggu&&d.상태!=='완료')return false;
     return true;
   });
   if(sort==='date_asc')filtered.sort((a,b)=>(a.날짜||'').localeCompare(b.날짜||''));
   else if(sort==='date_desc')filtered.sort((a,b)=>(b.날짜||'').localeCompare(a.날짜||''));
   else filtered.sort((a,b)=>(a.선명||'').localeCompare(b.선명||'','ko'));
+  // 입항일 임박(D-7 이내, 예정 상태) 상단 고정
+  filtered.sort((a,b)=>{
+    const da=getDday(a.입항일), db=getDday(b.입항일);
+    const aPin = da!==null && da>=0 && da<=7 && a.상태==='예정';
+    const bPin = db!==null && db>=0 && db<=7 && b.상태==='예정';
+    if(aPin&&!bPin) return -1;
+    if(!aPin&&bPin) return 1;
+    return 0;
+  });
   updateChips();page=1;renderList();
 }
 
@@ -467,6 +522,10 @@ function renderList(){
     const sClass='s-'+(d.상태||'');
     const overseasTag=d.구분==='해외'?`<span class="tag t-overseas">🌐 해외</span>`:'';
     const hagaTag=d.하가일정?`<span class="tag t-haga">📋 하가 ${d.하가일정}</span>`:'';
+    const ddayBadge=getDdayBadge(d.입항일);
+    const 입항Tag=d.입항일?`<span class="tag" style="background:#e0f2fe;color:#0369a1">⚓ 입항 ${d.입항일} ${ddayBadge}</span>`:'';
+    const 청구Tag=d.청구==='청구대기'?`<span class="tag" style="background:#fce4ec;color:#c62828">💰 청구대기</span>`:d.청구==='청구완료'?`<span class="tag" style="background:#e8f5e9;color:#2e7d32">✅ 청구완료</span>`:'';
+    const isPinned=getDday(d.입항일)!==null&&getDday(d.입항일)>=0&&getDday(d.입항일)<=7&&d.상태==='예정';
     const 구분Badge=선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
     const imoBadge=imo?`<span class="b-imo">IMO ${imo}</span>`:'';
     const 메인엔진=vm?.메인엔진||d.메인엔진||'';
@@ -511,8 +570,9 @@ function renderList(){
       </div>
       <div class="tags">
         <span class="tag t-place">📍 ${d.장소||'-'}</span>
-        ${overseasTag}${hagaTag}
+        ${overseasTag}${hagaTag}${입항Tag}${청구Tag}
       </div>
+      ${isPinned?`<div style="background:#fff7ed;border-radius:8px;padding:4px 10px;font-size:12px;color:#c2410c;font-weight:600;display:inline-block">📌 입항 임박</div>`:''}
       ${mainSec}${genSec}${noteBox}
     </div>`;
   }).join('');
@@ -587,12 +647,14 @@ async function submitAdd(){
       날짜,선명,선사:ga('a_선사'),장소:ga('a_장소'),구분:ga('a_구분')||'국내',상태:ga('a_상태')||'예정',
       메인엔진:ga('a_메인엔진'),메인GOV:ga('a_메인GOV'),메인작업:ga('a_메인작업'),
       발전기:ga('a_발전기'),발전기GOV:ga('a_발전기GOV'),발전기작업:ga('a_발전기작업'),
-      하가일정:ga('a_하가일정'),비고:ga('a_비고'),createdAt:new Date().toISOString()
+      하가일정:ga('a_하가일정'),입항일:ga('a_입항일'),청구:ga('a_청구'),비고:ga('a_비고'),createdAt:new Date().toISOString()
     });
     ['선명','선사','장소','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','비고'].forEach(k=>document.getElementById('a_'+k).value='');
     document.getElementById('a_상태').value='예정';document.getElementById('a_구분').value='국내';
     document.getElementById('a_날짜').value=new Date().toISOString().split('T')[0];
     document.getElementById('a_하가일정').value='';
+    document.getElementById('a_입항일').value='';
+    document.getElementById('a_청구').value='';
     closeAddModal();showToast(`✅ "${선명}" 추가됐습니다!`);
   }catch(e){alert('저장 실패: '+e.message);}
   btn.textContent='✅ 일정 추가';btn.disabled=false;
@@ -602,7 +664,7 @@ async function submitAdd(){
 function openEditByIdx(idx){
   const d=filtered[idx];if(!d)return;
   window._editIdx=idx;
-  ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','비고'].forEach(k=>{
+  ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','입항일','청구','비고'].forEach(k=>{
     const el=document.getElementById('e_'+k);if(el)el.value=d[k]||'';
   });
   openSheet('editOverlay','editModal');
@@ -617,7 +679,7 @@ async function submitEdit(){
   const updated={날짜,선명,선사:ge('e_선사'),장소:ge('e_장소'),구분:ge('e_구분')||'국내',상태:ge('e_상태')||'예정',
     메인엔진:ge('e_메인엔진'),메인GOV:ge('e_메인GOV'),메인작업:ge('e_메인작업'),
     발전기:ge('e_발전기'),발전기GOV:ge('e_발전기GOV'),발전기작업:ge('e_발전기작업'),
-    하가일정:ge('e_하가일정'),비고:ge('e_비고')};
+    하가일정:ge('e_하가일정'),입항일:ge('e_입항일'),청구:ge('e_청구'),비고:ge('e_비고')};
   const btn=document.getElementById('editSubmitBtn');btn.textContent='저장 중...';btn.disabled=true;
   try{
     if(d._fbId){await updateDoc(doc(db,'schedules',d._fbId),updated);}
@@ -841,6 +903,21 @@ function openShipModal(idx){
        style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px;margin-bottom:8px">
       <span>🚢 KOSWEC 선박조회</span><span style="color:#0a84ff;font-size:12px">내항/외항 확인 →</span>
     </a>
+    <div style="background:#fff;border-radius:14px;padding:16px;border:0.5px solid #e5e5ea">
+      <div style="font-size:12px;font-weight:700;color:#8e8e93;margin-bottom:10px">📋 작업 이력</div>
+      ${(()=>{
+        const history=[...fbSchedules,...BASE_WITH_ID.filter(b=>!deletedIds.has(b._uid))].filter(s=>s.선명===name).sort((a,b)=>(b.날짜||'').localeCompare(a.날짜||''));
+        if(!history.length) return '<div style="color:#8e8e93;font-size:13px">작업 이력 없음</div>';
+        return history.map(s=>`
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f2f2f7">
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600">${s.날짜||'-'} <span style="color:#8e8e93;font-weight:400">${s.장소||''}</span></div>
+              <div style="font-size:12px;color:#8e8e93">${s.메인작업||''} ${s.발전기작업||''}</div>
+            </div>
+            <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;${s.상태==='완료'?'background:#e8f5e9;color:#2e7d32':s.상태==='예정'?'background:#e3f2fd;color:#1565c0':s.상태==='연기'?'background:#fff3e0;color:#e65100':'background:#fce4ec;color:#c62828'}">${s.상태||'-'}</span>
+          </div>`).join('');
+      })()}
+    </div>
   `;
   openSheet('shipOverlay','shipModal');
 }
