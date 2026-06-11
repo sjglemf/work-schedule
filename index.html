@@ -1026,15 +1026,15 @@ function renderWeeklySummary(){
   if(!el)return;
   el.innerHTML=`
     <div style="background:#1c1c1e;border-radius:12px;padding:8px 12px;margin:6px 16px;display:flex;gap:8px;overflow-x:auto;align-items:center">
-      <div onclick="document.getElementById('sortSel').value='date_asc';applyFilters();" style="flex-shrink:0;background:rgba(255,255,255,.1);border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
+      <div onclick="['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>sel[k].clear());sel['상태'].add('예정');updateFilterLabels();applyFilters();" style="flex-shrink:0;background:rgba(255,255,255,.1);border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
         <div style="font-size:16px;font-weight:800;color:#fff">${thisWeek.length}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.6)">이번주 예정</div>
       </div>
-      ${dday.length?`<div onclick="document.getElementById('sortSel').value='date_asc';applyFilters();" style="flex-shrink:0;background:#ff375f;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
+      ${dday.length?`<div onclick="['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>sel[k].clear());sel['상태'].add('예정');document.getElementById('searchInput').value='';updateFilterLabels();filtered=ALL_DATA.filter(d=>d.상태==='예정'&&getDday(d.날짜)===0);document.getElementById('resultCount').textContent=filtered.length;renderList();" style="flex-shrink:0;background:#ff375f;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
         <div style="font-size:16px;font-weight:800;color:#fff">${dday.length}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.8)">오늘 D-day</div>
       </div>`:''}
-      ${청구대기.length?`<div onclick="sel['청구'].add('청구대기');updateFilterLabels();applyFilters();" style="flex-shrink:0;background:#ff9f0a;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
+      ${청구대기.length?`<div onclick="['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>sel[k].clear());sel['청구'].add('청구대기');sel['상태'].add('완료');updateFilterLabels();applyFilters();" style="flex-shrink:0;background:#ff9f0a;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
         <div style="font-size:16px;font-weight:800;color:#fff">${청구대기.length}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.8)">청구대기</div>
       </div>`:''}
