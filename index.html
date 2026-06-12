@@ -566,6 +566,11 @@ function renderList(){
     const imo=vm?.imo||d.imo||'';
     const sClass='s-'+(d.상태||'');
     const ddayBadge=d.상태==='예정'?getDdayBadge(d.날짜):'';
+    const dday=getDday(d.날짜);
+    const ddayBg=d.상태!=='예정'?'':dday===0?'#ff375f':dday>0&&dday<=3?'#ff9f0a':dday>3&&dday<=7?'#fde68a':dday<0?'#f2f2f7':'';
+    const ddayTextColor=dday!==null&&dday>3&&dday<=7?'#92400e':dday!==null&&dday<0?'#8e8e93':'#fff';
+    const ddayLabel=d.상태!=='예정'||dday===null?'':dday===0?'D-day':dday>0?`D-${dday}`:`D+${Math.abs(dday)}`;
+    const ddayBlock=ddayLabel&&ddayBg?`<div style="background:${ddayBg};border-radius:10px;padding:6px 12px;text-align:center;min-width:56px;margin-left:8px;flex-shrink:0"><div style="font-size:20px;font-weight:700;color:${ddayTextColor};line-height:1.1">${ddayLabel}</div></div>`:'';
     const 청구Tag=d.청구==='청구대기'?`<span class="tag" style="background:#fce4ec;color:#c62828">💰 청구대기</span>`:d.청구==='청구완료'?`<span class="tag" style="background:#e8f5e9;color:#2e7d32">✅ 청구완료</span>`:'';
     const dday=getDday(d.날짜);
     const isArrivalImminent=d.상태==='예정'&&dday!==null&&dday>=1&&dday<=7;
@@ -594,7 +599,7 @@ function renderList(){
       prevShip=d.선명;
     }
         html+=`<div style="background:${i%2===0?col.bg:col.alt};border-left:4px solid ${col.border};padding:12px 14px;border-top:0.5px solid ${col.border}30">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:5px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:5px">
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:5px">
             <span class="ship-name" onclick="openShipModal(${start+i})" style="color:${col.border};font-size:16px;font-weight:700;cursor:pointer">${d.선명||'-'}</span>
@@ -602,15 +607,19 @@ function renderList(){
           ${구분Badge||imoBadge?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${구분Badge}${imoBadge}</div>`:''}
           <div style="display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap">
             <span style="font-size:13px;font-weight:700;color:${col.text}">📅 ${d.날짜||'-'}</span>
-            ${ddayBadge}
             <span style="color:#c7c7cc;font-size:12px">·</span>
             <span style="font-size:13px;color:${col.text}">${d.선사||vm?.선사||'-'}</span>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
-          <span class="status-badge ${sClass}" >${d.상태||'-'}</span>
-          <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
-          <button class="del-btn" onclick="deleteItem(${start+i})">🗑</button>
+          ${ddayBlock}
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <span class="status-badge ${sClass}" >${d.상태||'-'}</span>
+            <div style="display:flex;gap:2px">
+              <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
+              <button class="del-btn" onclick="deleteItem(${start+i})">🗑</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="tags" style="margin-top:4px">
