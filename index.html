@@ -550,6 +550,11 @@ function updateChips(){
   });
 }
 
+function makeDdayBlock(label, bg, textColor){
+  if(!label||!bg) return '';
+  return '<div style="background:'+bg+';border-radius:10px;padding:6px 12px;text-align:center;min-width:56px;margin-left:8px;flex-shrink:0"><div style="font-size:20px;font-weight:700;color:'+textColor+';line-height:1.1">'+label+'</div></div>';
+}
+
 function renderList(){
   const total=filtered.length;
   document.getElementById('resultCount').textContent=total.toLocaleString();
@@ -570,9 +575,8 @@ function renderList(){
     const ddayBg=d.상태!=='예정'?'':dday===0?'#ff375f':dday>0&&dday<=3?'#ff9f0a':dday>3&&dday<=7?'#fde68a':dday<0?'#f2f2f7':'';
     const ddayTextColor=dday!==null&&dday>3&&dday<=7?'#92400e':dday!==null&&dday<0?'#8e8e93':'#fff';
     const ddayLabel=d.상태!=='예정'||dday===null?'':dday===0?'D-day':dday>0?`D-${dday}`:`D+${Math.abs(dday)}`;
-    const ddayBlock=ddayLabel&&ddayBg?`<div style="background:${ddayBg};border-radius:10px;padding:6px 12px;text-align:center;min-width:56px;margin-left:8px;flex-shrink:0"><div style="font-size:20px;font-weight:700;color:${ddayTextColor};line-height:1.1">${ddayLabel}</div></div>`:'';
+    const ddayBlock=makeDdayBlock(ddayLabel,ddayBg,ddayTextColor);
     const 청구Tag=d.청구==='청구대기'?`<span class="tag" style="background:#fce4ec;color:#c62828">💰 청구대기</span>`:d.청구==='청구완료'?`<span class="tag" style="background:#e8f5e9;color:#2e7d32">✅ 청구완료</span>`:'';
-    const dday=getDday(d.날짜);
     const isArrivalImminent=d.상태==='예정'&&dday!==null&&dday>=1&&dday<=7;
     const isDepartureImminent=d.상태==='예정'&&dday!==null&&dday<=0;
     const 구분Badge=선박구분==='내항선'?`<span class="b-inland">🔵 내항</span>`:선박구분==='외항선'?`<span class="b-overseas">🟠 외항</span>`:'';
