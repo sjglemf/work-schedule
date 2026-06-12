@@ -1035,6 +1035,8 @@ function widgetFilterCheonggu(){
 window.widgetFilterWeekly=widgetFilterWeekly;
 window.widgetFilterDday=widgetFilterDday;
 window.widgetFilterCheonggu=widgetFilterCheonggu;
+
+function renderWeeklySummary(){
   const today=new Date();today.setHours(0,0,0,0);
   const thisWeekEnd=new Date(today);thisWeekEnd.setDate(today.getDate()+7);
   const thisWeek=ALL_DATA.filter(d=>{
