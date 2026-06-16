@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>작업 스케줄</title>
+<title>DAUTECH</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:#f5f5f7;color:#1c1c1e;font-size:15px;overscroll-behavior:none}
@@ -428,7 +428,7 @@ onSnapshot(collection(db,'vessels'), snap=>{
   fbVessels=snap.docs.map(d=>({...d.data(),_fbId:d.id}));
 }, ()=>{});
 
-// Firebase 작업 스케줄
+// Firebase DAUTECH
 onSnapshot(query(collection(db,'schedules'),orderBy('createdAt','desc')), snap=>{
   fbSchedules=snap.docs.map(d=>({...d.data(),_fbId:d.id}));
   refresh();
@@ -1031,9 +1031,16 @@ async function quickCheongguToggle(idx){
 // 이번 주 요약 위젯
 function widgetFilterWeekly(){
   ['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>sel[k].clear());
-  sel['상태'].add('예정');
+  document.getElementById('searchInput').value='';
   updateFilterLabels();
-  applyFilters();
+  filtered=ALL_DATA.filter(d=>{
+    if(d.상태!=='예정')return false;
+    const dd=getDday(d.날짜);
+    return dd!==null&&dd>=0&&dd<=7;
+  }).sort((a,b)=>(a.날짜||'').localeCompare(b.날짜||''));
+  document.getElementById('resultCount').textContent=filtered.length;
+  page=1;
+  renderList();
 }
 function widgetFilterDday(){
   ['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>sel[k].clear());
@@ -1146,7 +1153,7 @@ function kakaoShareWeekly(){
     const ddayText=dd===0?'[D-day]':`[D-${dd}]`;
     return `🚢 ${d.선명} ${ddayText}\n📅 ${d.날짜} · ${d.선사||'-'}\n📍 ${d.장소||'-'}`;
   }).join('\n\n');
-  const text=`📋 DAUTECH 이번 주 작업 예정\n\n${lines}\n\n총 ${thisWeek.length}건\n작업 스케줄: https://sjglemf.github.io/work-schedule/`;
+  const text=`📋 DAUTECH 이번 주 작업 예정\n\n${lines}\n\n총 ${thisWeek.length}건\nDAUTECH: https://sjglemf.github.io/work-schedule/`;
   Kakao.Share.sendDefault({
     objectType:'text',
     text,
