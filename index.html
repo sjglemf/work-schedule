@@ -36,13 +36,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .b-inland{background:#dbeafe;color:#1d4ed8;font-size:11px;padding:2px 7px;border-radius:6px;font-weight:700}
 .b-overseas{background:#ffedd5;color:#c2410c;font-size:11px;padding:2px 7px;border-radius:6px;font-weight:700}
 .b-imo{background:#f2f2f7;color:#3c3c43;font-size:11px;padding:2px 7px;border-radius:6px;font-weight:600}
-.status-badge{font-size:17px;font-weight:700;padding:6px 14px;border-radius:8px;white-space:nowrap}
+.status-badge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap}
 .s-완료{background:#e8f5e9;color:#2e7d32}
 .s-예정{background:#e3f2fd;color:#1565c0}
 .s-연기{background:#fff3e0;color:#e65100}
 .s-캔슬{background:#fce4ec;color:#c62828}
 .card-btns{display:flex;gap:2px;flex-shrink:0}
-.edit-btn,.del-btn{background:none;border:none;color:#c7c7cc;font-size:18px;padding:2px 4px;cursor:pointer}
+.edit-btn,.del-btn{background:none;border:none;color:#c7c7cc;font-size:16px;padding:2px 4px;cursor:pointer}
 .edit-btn:active{color:#0a84ff}
 .del-btn:active{color:#ff375f}
 .card-meta{display:flex;align-items:center;gap:6px;font-size:13px;color:#3c3c43;flex-wrap:wrap}
@@ -50,10 +50,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .card-date{font-size:14px;color:#1c1c1e;font-weight:700}
 .section{margin-top:5px}
 .section-title{font-size:11px;font-weight:700;color:#8e8e93;letter-spacing:.5px;margin-bottom:4px}
+.engine-line{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:4px;line-height:1.5}
+.eng-label{font-size:10px;color:#8e8e93;font-weight:700;flex-shrink:0}
 .engine-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.eng-model{font-size:13px;color:#1c1c1e;font-weight:500}
-.eng-gov{background:#f2f2f7;color:#3c3c43;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600}
-.eng-work{background:#e8f4fd;color:#0055a5;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600}
+.eng-model{font-size:12px;color:#1c1c1e;font-weight:500}
+.eng-gov{background:#f2f2f7;color:#3c3c43;font-size:10px;padding:1px 6px;border-radius:5px;font-weight:600}
+.eng-work{background:#e8f4fd;color:#0055a5;font-size:10px;padding:1px 6px;border-radius:5px;font-weight:600}
 .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
 .tag{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;flex-shrink:0;white-space:nowrap}
 .t-place{background:#f3e8fd;color:#6b21a8}
@@ -579,7 +581,7 @@ function updateChips(){
 
 function makeDdayBlock(label, bg, textColor){
   if(!label||!bg) return '';
-  return '<span style="background:'+bg+';color:'+textColor+';font-size:17px;font-weight:700;padding:6px 14px;border-radius:8px;white-space:nowrap">'+label+'</span>';
+  return '<span style="background:'+bg+';color:'+textColor+';font-size:13px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap">'+label+'</span>';
 }
 
 function renderList(){
@@ -618,11 +620,11 @@ function renderList(){
     const departTag=d.출항일정?`<span class="tag t-depart">🚢 출항 ${d.출항일정}</span>`:'';
     let mainSec='';
     if(메인엔진||메인GOV||d.메인작업){
-      mainSec=`<div class="section"><div class="section-title">메인엔진</div><div class="engine-row">${메인엔진?`<span class="eng-model">${메인엔진}</span>`:''} ${메인GOV?`<span class="eng-gov">${메인GOV}</span>`:''} ${d.메인작업?`<span class="eng-work">${d.메인작업}</span>`:''}</div></div>`;
+      mainSec=`<div class="engine-line"><span class="eng-label">메인</span> ${메인엔진?`<span class="eng-model">${메인엔진}</span>`:''} ${메인GOV?`<span class="eng-gov">${메인GOV}</span>`:''} ${d.메인작업?`<span class="eng-work">${d.메인작업}</span>`:''}</div>`;
     }
     let genSec='';
     if(발전기||발전기GOV||d.발전기작업){
-      genSec=`<div class="section"><div class="section-title">발전기</div><div class="engine-row">${발전기?`<span class="eng-model">${발전기}</span>`:''} ${발전기GOV?`<span class="eng-gov">${발전기GOV}</span>`:''} ${d.발전기작업?`<span class="eng-work">${d.발전기작업}</span>`:''}</div></div>`;
+      genSec=`<div class="engine-line"><span class="eng-label">발전</span> ${발전기?`<span class="eng-model">${발전기}</span>`:''} ${발전기GOV?`<span class="eng-gov">${발전기GOV}</span>`:''} ${d.발전기작업?`<span class="eng-work">${d.발전기작업}</span>`:''}</div>`;
     }
     const noteBox=d.비고?`<div class="note-box"><span class="note-icon">📝</span><span class="note-text">${d.비고}</span></div>`:'';
     if(d.선명!==prevShip){
@@ -631,8 +633,8 @@ function renderList(){
       html+=`<div style="border-radius:12px;overflow:hidden;border:1px solid ${col.border}50">`;
       prevShip=d.선명;
     }
-        html+=`<div style="background:${i%2===0?col.bg:col.alt};border-left:4px solid ${col.border};padding:12px 14px;border-top:0.5px solid ${col.border}30">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:5px">
+        html+=`<div style="background:${i%2===0?col.bg:col.alt};border-left:4px solid ${col.border};padding:9px 12px;border-top:0.5px solid ${col.border}30">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px">
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:5px">
             <span class="ship-name" onclick="openShipModal(${start+i})" style="color:${col.border};font-size:16px;font-weight:700;cursor:pointer">${d.선명||'-'}</span>
