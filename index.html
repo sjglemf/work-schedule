@@ -99,6 +99,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .filter-fab{position:fixed;bottom:62px;right:16px;background:#1c1c1e;color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px;box-shadow:0 4px 16px rgba(0,0,0,.25);cursor:pointer;z-index:400}
 .filter-fab .dot{background:#ff375f;width:8px;height:8px;border-radius:50%;display:none}
 .filter-fab .dot.on{display:block}
+#filterDot.on{display:block !important}
 /* 체크 칩 */
 .check-grid{display:flex;flex-wrap:wrap;gap:7px;padding:8px 0}
 .check-chip{background:#f2f2f7;border:1.5px solid transparent;border-radius:20px;padding:7px 14px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:5px;color:#1c1c1e}
@@ -119,10 +120,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .cal-head button{background:none;border:none;font-size:20px;color:#0a84ff;cursor:pointer;padding:4px 10px}
 .cal-title{font-size:16px;font-weight:700}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:38px;gap:3px}
+.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .cal-dow{text-align:center;font-size:11px;color:#8e8e93;padding:4px 0}
 .cal-dow.sun{color:#ff375f}.cal-dow.sat{color:#0a84ff}
-.cal-cell{height:42px;min-height:42px;max-height:42px;border-radius:8px;background:#f7f7f9;display:flex;align-items:center;justify-content:center;font-size:13px;color:#3c3c43;cursor:pointer;position:relative;overflow:hidden}
+.cal-cell{height:100%;border-radius:8px;background:#f7f7f9;display:flex;align-items:center;justify-content:center;font-size:13px;color:#3c3c43;cursor:pointer;position:relative;overflow:hidden}
 .cal-cell.empty{background:transparent;cursor:default}
 .cal-cell.today{outline:2px solid #ff375f;font-weight:700}
 .cal-cell.selected{background:#0a84ff;color:#fff}
@@ -164,6 +166,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   <div style="display:flex;align-items:center;gap:10px">
     <span><strong id="resultCount">-</strong>건</span>
     <button id="viewToggleBtn" onclick="toggleCalendarView()" style="background:none;border:none;font-size:12px;color:#0a84ff;font-weight:600;cursor:pointer;padding:0">📅 달력</button>
+    <button onclick="openFilterMenu()" style="background:none;border:none;font-size:12px;color:#0a84ff;font-weight:600;cursor:pointer;padding:0;display:flex;align-items:center;gap:3px">🔍 필터<span class="dot" id="filterDot" style="background:#ff375f;width:6px;height:6px;border-radius:50%;display:none"></span></button>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <button id="bulkCheongguBtn" onclick="bulkCheongguComplete()" style="background:none;border:none;font-size:12px;color:#8e8e93;cursor:pointer;padding:0">💰 완료건 청구완료 일괄처리</button>
@@ -187,10 +190,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
   <button class="pg-btn" id="nextBtn" onclick="goPage(1)">다음 ▶</button>
 </div>
 
-<button class="filter-fab" onclick="openFilterMenu()">
-  <span>필터</span>
-  <span class="dot" id="filterDot"></span>
-</button>
 
 <!-- 필터 패널 -->
 <div class="overlay" id="filterOverlay" onclick="closeFilterMenu()"></div>
@@ -1328,8 +1327,10 @@ function renderCalendar(){
   html+='<div class="cal-head"><button onclick="calPrevMonth()">‹</button>';
   html+=`<span class="cal-title">${calYear}년 ${calMonth+1}월</span>`;
   html+='<button onclick="calNextMonth()">›</button></div>';
-  html+='<div class="cal-grid">';
+  html+='<div class="cal-dow-row">';
   dows.forEach((d,i)=>{html+=`<div class="cal-dow ${i===0?'sun':i===6?'sat':''}">${d}</div>`;});
+  html+='</div>';
+  html+='<div class="cal-grid">';
   for(let i=0;i<startDow;i++)html+='<div class="cal-cell empty"></div>';
   for(let day=1;day<=daysInMonth;day++){
     const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
