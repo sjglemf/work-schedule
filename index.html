@@ -37,7 +37,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .b-inland{background:#dbeafe;color:#1d4ed8;font-size:11px;padding:2px 7px;border-radius:6px;font-weight:700}
 .b-overseas{background:#ffedd5;color:#c2410c;font-size:11px;padding:2px 7px;border-radius:6px;font-weight:700}
 .b-imo{background:#f2f2f7;color:#3c3c43;font-size:11px;padding:2px 7px;border-radius:6px;font-weight:600}
-.status-badge{font-size:13px;font-weight:700;padding:5px 11px;border-radius:8px;white-space:nowrap}
+.status-badge{font-size:17px;font-weight:700;padding:9px 16px;border-radius:10px;white-space:nowrap}
 .s-완료{background:#e8f5e9;color:#2e7d32}
 .s-예정{background:#e3f2fd;color:#1565c0}
 .s-연기{background:#fff3e0;color:#e65100}
@@ -582,7 +582,7 @@ function updateChips(){
 
 function makeDdayBlock(label, bg, textColor){
   if(!label||!bg) return '';
-  return '<span style="background:'+bg+';color:'+textColor+';font-size:16px;font-weight:700;padding:5px 12px;border-radius:9px;white-space:nowrap">'+label+'</span>';
+  return '<span style="background:'+bg+';color:'+textColor+';font-size:24px;font-weight:700;padding:12px 18px;border-radius:11px;white-space:nowrap">'+label+'</span>';
 }
 
 function renderList(){
