@@ -60,6 +60,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .t-overseas{background:#fdf3e8;color:#7c3a00}
 .t-haga{background:#fff3e0;color:#b45309}
 .t-depart{background:#e0f2fe;color:#0369a1}
+.t-arrive{background:#e8f0fe;color:#1546a0}
 .note-box{margin-top:6px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 12px;display:flex;align-items:flex-start;gap:6px}
 .note-box .note-icon{font-size:14px;flex-shrink:0}
 .note-box .note-text{font-size:13px;color:#92400e;line-height:1.5;font-weight:500}
@@ -113,52 +114,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 /* 토스트 */
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#1c1c1e;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
-/* ===== 다크모드 ===== */
-body.dark{background:#000;color:#e5e5ea}
-body.dark .search-bar{background:#1c1c1e;border-bottom-color:#2c2c2e}
-body.dark .search-inner{background:#2c2c2e}
-body.dark .search-inner input{color:#e5e5ea}
-body.dark .filter-row{background:#1c1c1e;border-bottom-color:#2c2c2e}
-body.dark .chip{background:#2c2c2e;color:#d1d1d6}
-body.dark .chip.active{background:#0a84ff;color:#fff}
-body.dark .info-bar{background:#000}
-body.dark .card{background:#1c1c1e;border-bottom-color:#2c2c2e}
-body.dark .section-title{color:#8e8e93}
-body.dark .eng-model{color:#e5e5ea}
-body.dark .eng-gov{background:#2c2c2e;color:#d1d1d6}
-body.dark .note-box{background:#2c2c2e}
-body.dark .note-text{color:#d1d1d6}
-body.dark .b-imo{background:#2c2c2e;color:#d1d1d6}
-body.dark .modal,body.dark .sheet,body.dark .modal-content{background:#1c1c1e;color:#e5e5ea}
-body.dark .form-input,body.dark select.form-input{background:#2c2c2e;color:#e5e5ea;border-color:#3a3a3c}
-body.dark .form-group label{color:#d1d1d6}
-body.dark .vessel-item{background:#1c1c1e;border-bottom-color:#2c2c2e}
-body.dark .vessel-item:active{background:#2c2c2e}
-body.dark .vessel-name{color:#e5e5ea}
-body.dark .pager{background:#1c1c1e}
-body.dark .page-btn{background:#2c2c2e;color:#e5e5ea}
 /* ===== 달력 뷰 ===== */
-.cal-wrap{background:#fff;border-radius:14px;padding:12px;margin-top:8px;border:1px solid #e5e5ea}
-body.dark .cal-wrap{background:#1c1c1e;border-color:#2c2c2e}
+.cal-wrap{background:#fff;border-radius:14px;padding:12px;margin-top:8px;border:1px solid #e5e5ea;max-width:420px;margin-left:auto;margin-right:auto}
 .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .cal-head button{background:none;border:none;font-size:20px;color:#0a84ff;cursor:pointer;padding:4px 10px}
 .cal-title{font-size:16px;font-weight:700}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .cal-dow{text-align:center;font-size:11px;color:#8e8e93;padding:4px 0}
 .cal-dow.sun{color:#ff375f}.cal-dow.sat{color:#0a84ff}
-.cal-cell{aspect-ratio:1;border-radius:8px;background:#f7f7f9;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:5px;font-size:12px;color:#3c3c43;cursor:pointer;position:relative}
-body.dark .cal-cell{background:#2c2c2e;color:#d1d1d6}
+.cal-cell{height:42px;border-radius:8px;background:#f7f7f9;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;font-size:12px;color:#3c3c43;cursor:pointer;position:relative}
 .cal-cell.empty{background:transparent;cursor:default}
 .cal-cell.today{outline:2px solid #ff375f;font-weight:700}
 .cal-cell.selected{background:#0a84ff;color:#fff}
 .cal-dots{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center;max-width:90%}
 .cal-dot{width:5px;height:5px;border-radius:50%}
-.cal-legend{display:flex;gap:12px;margin-top:10px;font-size:11px;color:#8e8e93;flex-wrap:wrap}
+.cal-legend{display:flex;gap:12px;margin-top:10px;font-size:11px;color:#8e8e93;flex-wrap:wrap;justify-content:center}
 .cal-legend span{display:flex;align-items:center;gap:4px}
-.cal-day-list{margin-top:12px}
+.cal-day-list{margin-top:12px;max-width:420px;margin-left:auto;margin-right:auto}
 .cal-day-title{font-size:14px;font-weight:700;margin-bottom:8px;padding:0 2px}
 .cal-day-card{background:#fff;border:1px solid #e5e5ea;border-radius:10px;padding:10px 12px;margin-bottom:6px}
-body.dark .cal-day-card{background:#2c2c2e;border-color:#3a3a3c}
 </style>
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4" crossorigin="anonymous"></script>
 </head>
@@ -169,7 +143,6 @@ body.dark .cal-day-card{background:#2c2c2e;border-color:#3a3a3c}
   <h1><span style="white-space:nowrap">DAU</span> <span style="white-space:nowrap">TECH</span></h1>
   <div class="sync-dot loading" id="syncDot"></div>
   <div class="badge" id="totalBadge">-</div>
-  <button class="hdr-btn" onclick="toggleDark()" id="darkBtn">🌙</button>
   <button class="hdr-btn" onclick="location.href='help.html'">❓</button>
   <button class="hdr-btn" onclick="openVesselList()">🚢 선박</button>
   <button class="hdr-btn green" onclick="openAddModal()">+ 추가</button>
@@ -257,7 +230,7 @@ body.dark .cal-day-card{background:#2c2c2e;border-color:#3a3a3c}
   <div class="bs-header"><h2>작업 일정 추가</h2><button class="bs-close" onclick="closeAddModal()">✕</button></div>
   <div class="bs-body">
     <div class="form-row">
-      <div class="form-group"><label>날짜<span class="req">*</span></label><input type="date" class="form-input" id="a_날짜"></div>
+      <div class="form-group"><label>입항일정<span class="req">*</span></label><input type="date" class="form-input" id="a_날짜"></div>
       <div class="form-group"><label>상태</label>
         <select class="form-select" id="a_상태"><option value="예정">예정</option><option value="완료">완료</option><option value="연기">연기</option><option value="캔슬">캔슬</option></select>
       </div>
@@ -315,7 +288,7 @@ body.dark .cal-day-card{background:#2c2c2e;border-color:#3a3a3c}
   <div class="bs-header"><h2>✏️ 일정 수정</h2><button class="bs-close" onclick="closeEditModal()">✕</button></div>
   <div class="bs-body">
     <div class="form-row">
-      <div class="form-group"><label>날짜<span class="req">*</span></label><input type="date" class="form-input" id="e_날짜"></div>
+      <div class="form-group"><label>입항일정<span class="req">*</span></label><input type="date" class="form-input" id="e_날짜"></div>
       <div class="form-group"><label>상태</label>
         <select class="form-select" id="e_상태"><option value="예정">예정</option><option value="완료">완료</option><option value="연기">연기</option><option value="캔슬">캔슬</option></select>
       </div>
@@ -641,6 +614,7 @@ function renderList(){
     const 발전기=vm?.발전기||d.발전기||'';
     const 발전기GOV=vm?.발전기GOV||d.발전기GOV||'';
     const overseasTag=d.구분==='해외'?`<span class="tag t-overseas">🌐 해외</span>`:'';
+    const arriveTag=d.날짜?`<span class="tag t-arrive">📥 입항 ${d.날짜}</span>`:'';
     const hagaTag=d.하가일정?`<span class="tag t-haga">📋 하가 ${d.하가일정}</span>`:'';
     const departTag=d.출항일정?`<span class="tag t-depart">🚢 출항 ${d.출항일정}</span>`:'';
     let mainSec='';
@@ -664,11 +638,9 @@ function renderList(){
           <div style="display:flex;align-items:center;gap:5px">
             <span class="ship-name" onclick="openShipModal(${start+i})" style="color:${col.border};font-size:16px;font-weight:700;cursor:pointer">${d.선명||'-'}</span>
           </div>
-          ${구분Badge||imoBadge?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${구분Badge}${imoBadge}</div>`:''}
-          <div style="display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap">
-            <span style="font-size:13px;font-weight:700;color:${col.text}">📅 ${d.날짜||'-'}</span>
-            <span style="color:#c7c7cc;font-size:12px">·</span>
-            <span style="font-size:13px;color:${col.text}">${d.선사||vm?.선사||'-'}</span>
+          ${구분Badge||imoBadge||(d.선사||vm?.선사)?`<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:3px">${구분Badge}${imoBadge}<span style="font-size:13px;font-weight:600;color:${col.text}">${d.선사||vm?.선사||'-'}</span></div>`:''}
+          <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap">
+            ${arriveTag}${hagaTag}${departTag}
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;margin-left:8px">
@@ -684,10 +656,10 @@ function renderList(){
       </div>
       <div class="tags" style="margin-top:4px">
         <span class="tag t-place">📍 ${d.장소||'-'}</span>
-        ${overseasTag}${hagaTag}${departTag}${청구Tag}
+        ${isArrivalImminent?`<span class="tag" style="background:#eff6ff;color:#1d4ed8;font-weight:600">🚢 입항 임박</span>`:''}
+        ${isDepartureImminent?`<span class="tag" style="background:#fff7ed;color:#c2410c;font-weight:600">🚢 출항 임박</span>`:''}
+        ${overseasTag}${청구Tag}
       </div>
-      ${isArrivalImminent?`<div style="background:#eff6ff;border-radius:8px;padding:3px 10px;font-size:12px;color:#1d4ed8;font-weight:600;display:inline-block;margin-top:4px">🚢 입항 임박</div>`:''}
-      ${isDepartureImminent?`<div style="background:#fff7ed;border-radius:8px;padding:3px 10px;font-size:12px;color:#c2410c;font-weight:600;display:inline-block;margin-top:4px">🚢 출항 임박</div>`:''}
       ${mainSec}${genSec}${noteBox}
     </div>`;
   });
@@ -1308,14 +1280,6 @@ async function deleteVesselFromForm(){
   'quickStatusChange','quickCheongguToggle',
 ].forEach(fn => { try{ window[fn]=eval(fn); }catch(e){} });
 
-function toggleDark(){
-  const on=document.body.classList.toggle('dark');
-  try{localStorage.setItem('dautech_dark',on?'1':'0');}catch(e){}
-  const btn=document.getElementById('darkBtn');
-  if(btn)btn.textContent=on?'☀️':'🌙';
-}
-window.toggleDark=toggleDark;
-
 /* ===== 달력 뷰 ===== */
 let calYear, calMonth, calSelectedDate=null, isCalendarMode=false;
 function toggleCalendarView(){
@@ -1347,11 +1311,17 @@ function renderCalendar(){
   const startDow=first.getDay();
   const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
   const todayStr=new Date().toISOString().split('T')[0];
+  // 날짜별로 입항/하가/출항 이벤트 집계
   const byDate={};
+  function push(date,type,d){
+    if(!date)return;
+    if(!byDate[date])byDate[date]={입항:[],하가:[],출항:[]};
+    byDate[date][type].push(d);
+  }
   ALL_DATA.forEach(d=>{
-    if(!d.날짜)return;
-    if(!byDate[d.날짜])byDate[d.날짜]=[];
-    byDate[d.날짜].push(d);
+    push(d.날짜,'입항',d);
+    push(d.하가일정,'하가',d);
+    push(d.출항일정,'출항',d);
   });
   const dows=['일','월','화','수','목','금','토'];
   let html='<div class="cal-wrap">';
@@ -1363,52 +1333,49 @@ function renderCalendar(){
   for(let i=0;i<startDow;i++)html+='<div class="cal-cell empty"></div>';
   for(let day=1;day<=daysInMonth;day++){
     const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const items=byDate[ds]||[];
+    const ev=byDate[ds];
     const isToday=ds===todayStr;
     const isSel=ds===calSelectedDate;
     let dots='';
-    if(items.length){
-      const hasYejeong=items.some(x=>x.상태==='예정');
-      const hasDone=items.some(x=>x.상태==='완료');
-      const hasOther=items.some(x=>x.상태!=='예정'&&x.상태!=='완료');
+    if(ev){
       dots='<div class="cal-dots">';
-      if(hasYejeong)dots+='<span class="cal-dot" style="background:#30d158"></span>';
-      if(hasDone)dots+='<span class="cal-dot" style="background:#8e8e93"></span>';
-      if(hasOther)dots+='<span class="cal-dot" style="background:#ff9f0a"></span>';
+      if(ev.입항.length)dots+='<span class="cal-dot" style="background:#0a84ff"></span>';
+      if(ev.하가.length)dots+='<span class="cal-dot" style="background:#ff9f0a"></span>';
+      if(ev.출항.length)dots+='<span class="cal-dot" style="background:#30d158"></span>';
       dots+='</div>';
     }
     html+=`<div class="cal-cell ${isToday?'today':''} ${isSel?'selected':''}" onclick="calSelectDate('${ds}')">${day}${dots}</div>`;
   }
   html+='</div>';
   html+='<div class="cal-legend">';
-  html+='<span><span class="cal-dot" style="background:#30d158"></span>예정</span>';
-  html+='<span><span class="cal-dot" style="background:#8e8e93"></span>완료</span>';
-  html+='<span><span class="cal-dot" style="background:#ff9f0a"></span>기타</span>';
-  html+='<span style="color:#ff375f">⬜ 오늘</span>';
+  html+='<span><span class="cal-dot" style="background:#0a84ff"></span>입항</span>';
+  html+='<span><span class="cal-dot" style="background:#ff9f0a"></span>하가</span>';
+  html+='<span><span class="cal-dot" style="background:#30d158"></span>출항</span>';
   html+='</div></div>';
   if(calSelectedDate){
-    const items=byDate[calSelectedDate]||[];
+    const ev=byDate[calSelectedDate]||{입항:[],하가:[],출항:[]};
+    const total=ev.입항.length+ev.하가.length+ev.출항.length;
     html+='<div class="cal-day-list">';
-    html+=`<div class="cal-day-title">📅 ${calSelectedDate} (${items.length}건)</div>`;
-    if(!items.length){
-      html+='<div style="font-size:13px;color:#8e8e93;padding:8px 2px">작업 없음</div>';
+    html+=`<div class="cal-day-title">📅 ${calSelectedDate} (${total}건)</div>`;
+    if(!total){
+      html+='<div style="font-size:13px;color:#8e8e93;padding:8px 2px">일정 없음</div>';
     }else{
-      items.forEach(d=>{
-        const sColor=d.상태==='예정'?'#1565c0':d.상태==='완료'?'#2e7d32':'#e65100';
-        const sBg=d.상태==='예정'?'#e3f2fd':d.상태==='완료'?'#e8f5e9':'#fff3e0';
-        html+=`<div class="cal-day-card">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:14px;font-weight:700">${d.선명||'-'}</span>
-            <span style="font-size:11px;font-weight:600;color:${sColor};background:${sBg};padding:2px 8px;border-radius:6px">${d.상태||'-'}</span>
-          </div>
-          <div style="font-size:12px;color:#8e8e93;margin-top:3px">${d.선사||'-'} · ${d.장소||'-'}</div>
-          ${d.메인엔진||d.발전기?`<div style="font-size:12px;color:#888;margin-top:3px">${d.메인엔진||''} ${d.발전기?'/ '+d.발전기:''}</div>`:''}
-        </div>`;
+      const order=[['입항',ev.입항,'#0a84ff','#e3f2fd'],['하가',ev.하가,'#b45309','#fff3e0'],['출항',ev.출항,'#0369a1','#e0f2fe']];
+      order.forEach(([label,arr,color,bg])=>{
+        arr.forEach(d=>{
+          html+=`<div class="cal-day-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+              <span style="font-size:14px;font-weight:700">${d.선명||'-'}</span>
+              <span style="font-size:11px;font-weight:700;color:${color};background:${bg};padding:2px 8px;border-radius:6px;flex-shrink:0">${label}</span>
+            </div>
+            <div style="font-size:12px;color:#8e8e93;margin-top:3px">${d.선사||'-'} · ${d.장소||'-'}</div>
+          </div>`;
+        });
       });
     }
     html+='</div>';
   }else{
-    html+='<div style="font-size:13px;color:#8e8e93;text-align:center;margin-top:14px">날짜를 탭하면 그날 작업이 표시됩니다</div>';
+    html+='<div style="font-size:13px;color:#8e8e93;text-align:center;margin-top:14px">날짜를 탭하면 그날 일정이 표시됩니다</div>';
   }
   el.innerHTML=html;
 }
@@ -1417,15 +1384,6 @@ window.toggleCalendarView=toggleCalendarView;
 window.calPrevMonth=calPrevMonth;
 window.calNextMonth=calNextMonth;
 window.calSelectDate=calSelectDate;
-(function(){
-  try{
-    if(localStorage.getItem('dautech_dark')==='1'){
-      document.body.classList.add('dark');
-      const btn=document.getElementById('darkBtn');
-      if(btn)btn.textContent='☀️';
-    }
-  }catch(e){}
-})();
 
 init();
 </script>
