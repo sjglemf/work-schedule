@@ -36,7 +36,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .b-inland{background:#dbeafe;color:#1d4ed8;font-size:11px;padding:2px 7px;border-radius:6px;font-weight:700}
 .b-overseas{background:#ffedd5;color:#c2410c;font-size:11px;padding:2px 7px;border-radius:6px;font-weight:700}
 .b-imo{background:#f2f2f7;color:#3c3c43;font-size:11px;padding:2px 7px;border-radius:6px;font-weight:600}
-.status-badge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap}
+.status-badge{font-size:15px;font-weight:700;padding:7px 14px;border-radius:9px;white-space:nowrap}
 .s-완료{background:#e8f5e9;color:#2e7d32}
 .s-예정{background:#e3f2fd;color:#1565c0}
 .s-연기{background:#fff3e0;color:#e65100}
@@ -581,7 +581,7 @@ function updateChips(){
 
 function makeDdayBlock(label, bg, textColor){
   if(!label||!bg) return '';
-  return '<span style="background:'+bg+';color:'+textColor+';font-size:13px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap">'+label+'</span>';
+  return '<span style="background:'+bg+';color:'+textColor+';font-size:20px;font-weight:700;padding:7px 16px;border-radius:10px;white-space:nowrap">'+label+'</span>';
 }
 
 function renderList(){
@@ -616,8 +616,8 @@ function renderList(){
     const 발전기GOV=vm?.발전기GOV||d.발전기GOV||'';
     const overseasTag=d.구분==='해외'?`<span class="tag t-overseas">🌐 해외</span>`:'';
     const arriveTag=d.날짜?`<span class="tag t-arrive">📥 입항 ${d.날짜}</span>`:'';
-    const hagaTag=d.하가일정?`<span class="tag t-haga">📋 하가 ${d.하가일정}</span>`:'';
-    const departTag=d.출항일정?`<span class="tag t-depart">🚢 출항 ${d.출항일정}</span>`:'';
+    const hagaTag=d.하가일정?`<span class="tag t-haga">📋 하가 ${d.하가일정.length>=10?d.하가일정.slice(5):d.하가일정}</span>`:'';
+    const departTag=d.출항일정?`<span class="tag t-depart">🚢 출항 ${d.출항일정.length>=10?d.출항일정.slice(5):d.출항일정}</span>`:'';
     let mainSec='';
     if(메인엔진||메인GOV||d.메인작업){
       mainSec=`<div class="engine-line"><span class="eng-label">메인</span> ${메인엔진?`<span class="eng-model">${메인엔진}</span>`:''} ${메인GOV?`<span class="eng-gov">${메인GOV}</span>`:''} ${d.메인작업?`<span class="eng-work">${d.메인작업}</span>`:''}</div>`;
@@ -640,20 +640,16 @@ function renderList(){
             <span class="ship-name" onclick="openShipModal(${start+i})" style="color:${col.border};font-size:16px;font-weight:700;cursor:pointer">${d.선명||'-'}</span>
           </div>
           ${구분Badge||imoBadge||(d.선사||vm?.선사)?`<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:3px">${구분Badge}${imoBadge}<span style="font-size:13px;font-weight:600;color:${col.text}">${d.선사||vm?.선사||'-'}</span></div>`:''}
-          <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch">
-            ${arriveTag}${hagaTag}${departTag}
-          </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;margin-left:8px">
-          <div style="display:flex;gap:5px;align-items:center">
-            ${ddayBlock}
-            <span class="status-badge ${sClass}">${d.상태||'-'}</span>
-          </div>
-          <div style="display:flex;gap:2px">
+          <div style="display:flex;gap:6px">
             <button class="edit-btn" onclick="openEditByIdx(${start+i})">✏️</button>
             <button class="del-btn" onclick="deleteItem(${start+i})">🗑</button>
           </div>
         </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap">
+        ${arriveTag}${hagaTag}${departTag}
       </div>
       <div class="tags" style="margin-top:4px">
         <span class="tag t-place">📍 ${d.장소||'-'}</span>
@@ -661,7 +657,14 @@ function renderList(){
         ${isDepartureImminent?`<span class="tag" style="background:#fff7ed;color:#c2410c;font-weight:600">🚢 출항 임박</span>`:''}
         ${overseasTag}${청구Tag}
       </div>
-      ${mainSec}${genSec}${noteBox}
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px">
+        <div style="flex:1;min-width:0">${mainSec}${genSec}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <span class="status-badge ${sClass}">${d.상태||'-'}</span>
+          ${ddayBlock}
+        </div>
+      </div>
+      ${noteBox}
     </div>`;
   });
   if(prevShip) html+='</div>';
