@@ -8,7 +8,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:#f5f5f7;color:#1c1c1e;font-size:15px;overscroll-behavior:none}
 .hdr{position:sticky;top:0;z-index:200;background:#1c1c1e;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 0 rgba(0,0,0,.2)}
-.hdr h1{font-size:17px;font-weight:700;flex:1}
+.hdr h1{font-size:17px;font-weight:700;flex:1;line-height:1.15}
 .badge{background:#0a84ff;color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
 .hdr-btn{background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:20px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
 .hdr-btn.green{background:#30d158}
@@ -59,6 +59,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .t-place{background:#f3e8fd;color:#6b21a8}
 .t-overseas{background:#fdf3e8;color:#7c3a00}
 .t-haga{background:#fff3e0;color:#b45309}
+.t-depart{background:#e0f2fe;color:#0369a1}
 .note-box{margin-top:6px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 12px;display:flex;align-items:flex-start;gap:6px}
 .note-box .note-icon{font-size:14px;flex-shrink:0}
 .note-box .note-text{font-size:13px;color:#92400e;line-height:1.5;font-weight:500}
@@ -119,7 +120,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 
 <div class="hdr">
   <span style="font-size:20px">⚙️</span>
-  <h1>작업 스케줄</h1>
+  <h1><span style="white-space:nowrap">작업</span> <span style="white-space:nowrap">스케줄</span></h1>
   <div class="sync-dot loading" id="syncDot"></div>
   <div class="badge" id="totalBadge">-</div>
   <button class="hdr-btn" onclick="location.href='help.html'">❓</button>
@@ -238,6 +239,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
     <div class="form-divider">📋 기타</div>
     <div class="form-row">
       <div class="form-group"><label>하가일정</label><input type="date" class="form-input" id="a_하가일정"></div>
+      <div class="form-group"><label>출항일정</label><input type="date" class="form-input" id="a_출항일정"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>청구 여부</label>
@@ -291,6 +293,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
     <div class="form-divider">📋 기타</div>
     <div class="form-row">
       <div class="form-group"><label>하가일정</label><input type="date" class="form-input" id="e_하가일정"></div>
+      <div class="form-group"><label>출항일정</label><input type="date" class="form-input" id="e_출항일정"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>청구 여부</label>
@@ -587,6 +590,7 @@ function renderList(){
     const 발전기GOV=vm?.발전기GOV||d.발전기GOV||'';
     const overseasTag=d.구분==='해외'?`<span class="tag t-overseas">🌐 해외</span>`:'';
     const hagaTag=d.하가일정?`<span class="tag t-haga">📋 하가 ${d.하가일정}</span>`:'';
+    const departTag=d.출항일정?`<span class="tag t-depart">🚢 출항 ${d.출항일정}</span>`:'';
     let mainSec='';
     if(메인엔진||메인GOV||d.메인작업){
       mainSec=`<div class="section"><div class="section-title">메인엔진</div><div class="engine-row">${메인엔진?`<span class="eng-model">${메인엔진}</span>`:''} ${메인GOV?`<span class="eng-gov">${메인GOV}</span>`:''} ${d.메인작업?`<span class="eng-work">${d.메인작업}</span>`:''}</div></div>`;
@@ -628,7 +632,7 @@ function renderList(){
       </div>
       <div class="tags" style="margin-top:4px">
         <span class="tag t-place">📍 ${d.장소||'-'}</span>
-        ${overseasTag}${hagaTag}${청구Tag}
+        ${overseasTag}${hagaTag}${departTag}${청구Tag}
       </div>
       ${isArrivalImminent?`<div style="background:#eff6ff;border-radius:8px;padding:3px 10px;font-size:12px;color:#1d4ed8;font-weight:600;display:inline-block;margin-top:4px">🚢 입항 임박</div>`:''}
       ${isDepartureImminent?`<div style="background:#fff7ed;border-radius:8px;padding:3px 10px;font-size:12px;color:#c2410c;font-weight:600;display:inline-block;margin-top:4px">🚢 출항 임박</div>`:''}
@@ -738,12 +742,13 @@ async function submitAdd(){
       날짜,선명,선사:ga('a_선사'),장소:ga('a_장소'),구분:ga('a_구분')||'국내',상태:ga('a_상태')||'예정',
       메인엔진:ga('a_메인엔진'),메인GOV:ga('a_메인GOV'),메인작업:ga('a_메인작업'),
       발전기:ga('a_발전기'),발전기GOV:ga('a_발전기GOV'),발전기작업:ga('a_발전기작업'),
-      하가일정:ga('a_하가일정'),청구:ga('a_청구'),비고:ga('a_비고'),createdAt:new Date().toISOString()
+      하가일정:ga('a_하가일정'),출항일정:ga('a_출항일정'),청구:ga('a_청구'),비고:ga('a_비고'),createdAt:new Date().toISOString()
     });
     ['선명','선사','장소','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','비고'].forEach(k=>document.getElementById('a_'+k).value='');
     document.getElementById('a_상태').value='예정';document.getElementById('a_구분').value='국내';
     document.getElementById('a_날짜').value=new Date().toISOString().split('T')[0];
     document.getElementById('a_하가일정').value='';
+    document.getElementById('a_출항일정').value='';
     
     document.getElementById('a_청구').value='';
     closeAddModal();showToast(`✅ "${선명}" 추가됐습니다!`);
@@ -755,7 +760,7 @@ async function submitAdd(){
 function openEditByIdx(idx){
   const d=filtered[idx];if(!d)return;
   window._editIdx=idx;
-  ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','청구','비고'].forEach(k=>{
+  ['날짜','선명','선사','장소','구분','상태','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','하가일정','출항일정','청구','비고'].forEach(k=>{
     const el=document.getElementById('e_'+k);if(el)el.value=d[k]||'';
   });
   openSheet('editOverlay','editModal');
@@ -770,7 +775,7 @@ async function submitEdit(){
   const updated={날짜,선명,선사:ge('e_선사'),장소:ge('e_장소'),구분:ge('e_구분')||'국내',상태:ge('e_상태')||'예정',
     메인엔진:ge('e_메인엔진'),메인GOV:ge('e_메인GOV'),메인작업:ge('e_메인작업'),
     발전기:ge('e_발전기'),발전기GOV:ge('e_발전기GOV'),발전기작업:ge('e_발전기작업'),
-    하가일정:ge('e_하가일정'),청구:ge('e_청구'),비고:ge('e_비고')};
+    하가일정:ge('e_하가일정'),출항일정:ge('e_출항일정'),청구:ge('e_청구'),비고:ge('e_비고')};
   const btn=document.getElementById('editSubmitBtn');btn.textContent='저장 중...';btn.disabled=true;
   try{
     if(d._fbId){await updateDoc(doc(db,'schedules',d._fbId),updated);}
@@ -1045,9 +1050,20 @@ function widgetFilterCheonggu(){
   updateFilterLabels();
   applyFilters();
 }
+function widgetFilterNextWeek(){
+  ['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>sel[k].clear());
+  document.getElementById('searchInput').value='';
+  updateFilterLabels();
+  filtered=ALL_DATA.filter(d=>d.상태==='예정'&&getDday(d.날짜)!==null&&getDday(d.날짜)>7)
+    .sort((a,b)=>(a.날짜||'').localeCompare(b.날짜||''));
+  document.getElementById('resultCount').textContent=filtered.length;
+  page=1;
+  renderList();
+}
 window.widgetFilterWeekly=widgetFilterWeekly;
 window.widgetFilterDday=widgetFilterDday;
 window.widgetFilterCheonggu=widgetFilterCheonggu;
+window.widgetFilterNextWeek=widgetFilterNextWeek;
 
 function renderWeeklySummary(){
   const today=new Date();today.setHours(0,0,0,0);
@@ -1058,16 +1074,25 @@ function renderWeeklySummary(){
     return dd!==null&&dd>=0&&dd<=7;
   });
   const dday=thisWeek.filter(d=>getDday(d.날짜)===0);
+  const 다음주=ALL_DATA.filter(d=>{
+    if(d.상태!=='예정')return false;
+    const dd=getDday(d.날짜);
+    return dd!==null&&dd>7;
+  });
   const 청구대기=ALL_DATA.filter(d=>d.상태==='완료'&&d.청구==='청구대기');
-  if(!thisWeek.length&&!청구대기.length) return;
+  if(!thisWeek.length&&!다음주.length&&!청구대기.length) return;
   const el=document.getElementById('weeklySummary');
   if(!el)return;
   el.innerHTML=`
     <div style="background:#1c1c1e;border-radius:12px;padding:8px 12px;margin:6px 16px;display:flex;gap:8px;overflow-x:auto;align-items:center">
-      <div onclick="widgetFilterWeekly()" style="flex-shrink:0;background:rgba(255,255,255,.1);border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
+      <div onclick="widgetFilterWeekly()" style="flex-shrink:0;background:#30d158;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
         <div style="font-size:16px;font-weight:800;color:#fff">${thisWeek.length}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.6)">이번주 예정</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.9)">이번주 예정</div>
       </div>
+      ${다음주.length?`<div onclick="widgetFilterNextWeek()" style="flex-shrink:0;background:#0a84ff;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
+        <div style="font-size:16px;font-weight:800;color:#fff">${다음주.length}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.8)">예정</div>
+      </div>`:''}
       ${dday.length?`<div onclick="widgetFilterDday()" style="flex-shrink:0;background:#ff375f;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
         <div style="font-size:16px;font-weight:800;color:#fff">${dday.length}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.8)">오늘 D-day</div>
