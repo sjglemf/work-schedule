@@ -490,6 +490,13 @@ function buildOpts(){
   });
 }
 
+function localDateStr(d){
+  d=d||new Date();
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 function getDday(dateStr){
   if(!dateStr) return null;
   const today = new Date(); today.setHours(0,0,0,0);
@@ -509,7 +516,7 @@ function getDdayBadge(dateStr){
 
 
 function init(){
-  document.getElementById('a_날짜').value=new Date().toISOString().split('T')[0];
+  document.getElementById('a_날짜').value=localDateStr();
   const inp=document.getElementById('searchInput');
   inp.addEventListener('input',()=>{
     document.getElementById('clearBtn').style.display=inp.value?'block':'none';
@@ -775,7 +782,7 @@ async function submitAdd(){
     });
     ['선명','선사','장소','메인엔진','메인GOV','메인작업','발전기','발전기GOV','발전기작업','비고'].forEach(k=>document.getElementById('a_'+k).value='');
     document.getElementById('a_상태').value='예정';document.getElementById('a_구분').value='국내';
-    document.getElementById('a_날짜').value=new Date().toISOString().split('T')[0];
+    document.getElementById('a_날짜').value=localDateStr();
     document.getElementById('a_하가일정').value='';
     document.getElementById('a_출항일정').value='';
     
@@ -1315,7 +1322,7 @@ function renderCalendar(){
   const first=new Date(calYear,calMonth,1);
   const startDow=first.getDay();
   const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-  const todayStr=new Date().toISOString().split('T')[0];
+  const todayStr=localDateStr();
   // 날짜별로 입항/하가/출항 이벤트 집계
   const byDate={};
   function push(date,type,d){
