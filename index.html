@@ -1092,6 +1092,10 @@ function renderWeeklySummary(){
   if(!el)return;
   el.innerHTML=`
     <div style="background:#1c1c1e;border-radius:12px;padding:8px 12px;margin:6px 16px;display:flex;gap:8px;overflow-x:auto;align-items:center">
+      ${dday.length?`<div onclick="widgetFilterDday()" style="flex-shrink:0;background:#ff375f;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
+        <div style="font-size:16px;font-weight:800;color:#fff">${dday.length}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.8)">오늘 D-day</div>
+      </div>`:''}
       <div onclick="widgetFilterWeekly()" style="flex-shrink:0;background:#30d158;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
         <div style="font-size:16px;font-weight:800;color:#fff">${thisWeek.length}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.9)">이번주 예정</div>
@@ -1099,10 +1103,6 @@ function renderWeeklySummary(){
       ${다음주.length?`<div onclick="widgetFilterNextWeek()" style="flex-shrink:0;background:#0a84ff;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
         <div style="font-size:16px;font-weight:800;color:#fff">${다음주.length}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.8)">예정</div>
-      </div>`:''}
-      ${dday.length?`<div onclick="widgetFilterDday()" style="flex-shrink:0;background:#ff375f;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
-        <div style="font-size:16px;font-weight:800;color:#fff">${dday.length}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.8)">오늘 D-day</div>
       </div>`:''}
       ${청구대기.length?`<div onclick="widgetFilterCheonggu()" style="flex-shrink:0;background:#ff9f0a;border-radius:8px;padding:6px 12px;cursor:pointer;text-align:center">
         <div style="font-size:16px;font-weight:800;color:#fff">${청구대기.length}</div>
