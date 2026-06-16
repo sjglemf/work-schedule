@@ -55,7 +55,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .eng-gov{background:#f2f2f7;color:#3c3c43;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600}
 .eng-work{background:#e8f4fd;color:#0055a5;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600}
 .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
-.tag{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500}
+.tag{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;flex-shrink:0;white-space:nowrap}
 .t-place{background:#f3e8fd;color:#6b21a8}
 .t-overseas{background:#fdf3e8;color:#7c3a00}
 .t-haga{background:#fff3e0;color:#b45309}
@@ -638,7 +638,7 @@ function renderList(){
             <span class="ship-name" onclick="openShipModal(${start+i})" style="color:${col.border};font-size:16px;font-weight:700;cursor:pointer">${d.선명||'-'}</span>
           </div>
           ${구분Badge||imoBadge||(d.선사||vm?.선사)?`<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:3px">${구분Badge}${imoBadge}<span style="font-size:13px;font-weight:600;color:${col.text}">${d.선사||vm?.선사||'-'}</span></div>`:''}
-          <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch">
             ${arriveTag}${hagaTag}${departTag}
           </div>
         </div>
