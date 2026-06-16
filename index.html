@@ -572,8 +572,8 @@ function renderList(){
     const sClass='s-'+(d.상태||'');
     const ddayBadge=d.상태==='예정'?getDdayBadge(d.날짜):'';
     const dday=getDday(d.날짜);
-    const ddayBg=d.상태!=='예정'?'':dday===0?'#ff375f':dday>0&&dday<=3?'#ff9f0a':dday>3&&dday<=7?'#fde68a':dday!==null&&dday<0?'#e5e5ea':'';
-    const ddayTextColor=dday!==null&&dday>3&&dday<=7?'#92400e':dday!==null&&dday<0?'#3c3c43':'#fff';
+    const ddayBg=d.상태!=='예정'?'':dday===0?'#ff375f':dday>0&&dday<=3?'#ff9f0a':dday>3&&dday<=7?'#fde68a':dday>7?'#f2f2f7':dday!==null&&dday<0?'#e5e5ea':'';
+    const ddayTextColor=dday!==null&&dday>3&&dday<=7?'#92400e':dday>7?'#3c3c43':dday!==null&&dday<0?'#3c3c43':'#fff';
     const ddayLabel=d.상태!=='예정'||dday===null?'':dday===0?'D-day':dday>0?`D-${dday}`:`D+${Math.abs(dday)}`;
     const ddayBlock=makeDdayBlock(ddayLabel,ddayBg,ddayTextColor);
     const 청구Tag=d.청구==='청구대기'?`<span class="tag" style="background:#fce4ec;color:#c62828">💰 청구대기</span>`:d.청구==='청구완료'?`<span class="tag" style="background:#e8f5e9;color:#2e7d32">✅ 청구완료</span>`:'';
