@@ -823,8 +823,7 @@ window.addEventListener('popstate', ()=>{
   _pushGuard();
   setTimeout(()=>{ _exitArmed=false; }, 2000);
 });
-// 첫 진입 시 가드 단계를 2개 쌓아둠 (PWA에서 첫 뒤로가기에 바로 안 나가도록)
-_pushGuard();
+// 첫 진입 시 가드 단계 추가
 _pushGuard();
 
 // 작업 추가
