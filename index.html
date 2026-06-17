@@ -805,14 +805,29 @@ function _closeTopSheet(){
   document.getElementById(s.shId).classList.remove('open');
   return true;
 }
-// 페이지 로드시 가드를 깔아둠 → 첫 뒤로가기를 항상 가로챔
-window.addEventListener('load', ()=>{ history.pushState({guard:1}, ''); });
+// 즉시 가드를 깔아둠 (load 대기하면 이미 지나가서 안 먹음)
+try{ history.pushState({guard:1}, ''); }catch(e){}
 window.addEventListener('popstate', ()=>{
-  // 항상 가드를 다시 세워서 다음 뒤로가기도 가로채게
+  // 디버그: 화면 상단에 잠깐 표시
+  _backDebug('뒤로가기 감지 / 열린창='+_sheetStack.length);
+  // 항상 가드를 다시 세움
   history.pushState({guard:1}, '');
-  // 열린 창이 있으면 닫기 (없으면 아무것도 안 함 = 앱에 머무름)
+  // 열린 창이 있으면 닫기
   _closeTopSheet();
 });
+function _backDebug(msg){
+  let d=document.getElementById('_backDbg');
+  if(!d){
+    d=document.createElement('div');
+    d.id='_backDbg';
+    d.style.cssText='position:fixed;top:0;left:0;right:0;background:#ff375f;color:#fff;font-size:12px;padding:6px;text-align:center;z-index:99999';
+    document.body.appendChild(d);
+  }
+  d.textContent=msg;
+  d.style.display='block';
+  clearTimeout(d._t);
+  d._t=setTimeout(()=>{d.style.display='none'},1500);
+}
 
 // 작업 추가
 function openAddModal(){openSheet('addOverlay','addModal');}
