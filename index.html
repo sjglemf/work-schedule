@@ -783,8 +783,34 @@ function updateFilterLabels(){
 }
 
 // 공통 시트 열기/닫기
-function openSheet(ovId,shId){document.getElementById(ovId).classList.add('open');requestAnimationFrame(()=>document.getElementById(shId).classList.add('open'));}
-function closeSheet(ovId,shId){document.getElementById(ovId).classList.remove('open');document.getElementById(shId).classList.remove('open');}
+let _sheetStack=[];
+let _closingByCode=false;
+function openSheet(ovId,shId){
+  document.getElementById(ovId).classList.add('open');
+  requestAnimationFrame(()=>document.getElementById(shId).classList.add('open'));
+  _sheetStack.push({ovId,shId});
+  history.pushState({sheet:true}, '');
+}
+function closeSheet(ovId,shId){
+  document.getElementById(ovId).classList.remove('open');
+  document.getElementById(shId).classList.remove('open');
+  const idx=_sheetStack.findIndex(s=>s.ovId===ovId&&s.shId===shId);
+  if(idx>-1){
+    _sheetStack.splice(idx,1);
+    // 코드로 닫을 땐 추가했던 히스토리 단계를 되돌림
+    _closingByCode=true;
+    history.back();
+  }
+}
+// 폰 뒤로가기 → 열린 창만 닫기
+window.addEventListener('popstate', ()=>{
+  if(_closingByCode){ _closingByCode=false; return; }
+  if(_sheetStack.length){
+    const s=_sheetStack.pop();
+    document.getElementById(s.ovId).classList.remove('open');
+    document.getElementById(s.shId).classList.remove('open');
+  }
+});
 
 // 작업 추가
 function openAddModal(){openSheet('addOverlay','addModal');}
