@@ -1269,7 +1269,10 @@ function kakaoShareWeekly(){
     const ddayText=dd===0?'[D-day]':`[D-${dd}]`;
     return `🚢 ${d.선명} ${ddayText}\n📅 ${info.basis} ${info.date} · ${d.선사||'-'}\n📍 ${d.장소||'-'}`;
   }).join('\n\n');
-  const text=`📋 DAUTECH 이번 주 작업 예정\n\n${lines}\n\n총 ${thisWeek.length}건\nDAUTECH: https://sjglemf.github.io/work-schedule/`;
+  const noticeEl=document.getElementById('noticeText');
+  const noticeTxt=(noticeEl&&noticeEl.textContent&&noticeEl.textContent!=='공지 추가하기')?noticeEl.textContent.trim():'';
+  const noticeBlock=noticeTxt?`📢 공지: ${noticeTxt}\n━━━━━━━━━━\n\n`:'';
+  const text=`📋 DAUTECH 이번 주 작업 예정\n\n${noticeBlock}${lines}\n\n총 ${thisWeek.length}건\nDAUTECH: https://sjglemf.github.io/work-schedule/`;
   Kakao.Share.sendDefault({
     objectType:'text',
     text,
