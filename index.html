@@ -784,6 +784,7 @@ function updateFilterLabels(){
 
 // 공통 시트 열기/닫기
 let _sheetStack=[];
+let _exitArmed=false;
 function openSheet(ovId,shId){
   document.getElementById(ovId).classList.add('open');
   requestAnimationFrame(()=>document.getElementById(shId).classList.add('open'));
@@ -797,12 +798,25 @@ function closeSheet(ovId,shId){
   if(idx>-1) _sheetStack.splice(idx,1);
 }
 window.addEventListener('popstate', ()=>{
+  // 1) 열린 창이 있으면 창만 닫기
   if(_sheetStack.length){
     const s=_sheetStack.pop();
     document.getElementById(s.ovId).classList.remove('open');
     document.getElementById(s.shId).classList.remove('open');
+    return;
   }
+  // 2) 창 없을 때(홈): 두 번 눌러야 종료
+  if(_exitArmed){
+    history.back();   // 두 번째 → 실제 종료
+    return;
+  }
+  _exitArmed=true;
+  showToast('한 번 더 누르면 종료됩니다');
+  history.pushState({home:1}, '');   // 가드 다시 세워 앱이 안 나가게
+  setTimeout(()=>{ _exitArmed=false; }, 2000);
 });
+// 첫 진입 시 가드 한 단계 (홈에서 첫 뒤로가기를 받기 위함)
+history.pushState({home:1}, '');
 
 // 작업 추가
 function openAddModal(){openSheet('addOverlay','addModal');}
