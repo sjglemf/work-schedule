@@ -784,48 +784,47 @@ function updateFilterLabels(){
 
 // 공통 시트 열기/닫기
 let _sheetStack=[];
-let _closingByCode=false;
 function openSheet(ovId,shId){
   document.getElementById(ovId).classList.add('open');
   requestAnimationFrame(()=>document.getElementById(shId).classList.add('open'));
   _sheetStack.push({ovId,shId});
-  history.pushState({sheet:true}, '');
 }
 function closeSheet(ovId,shId){
   document.getElementById(ovId).classList.remove('open');
   document.getElementById(shId).classList.remove('open');
   const idx=_sheetStack.findIndex(s=>s.ovId===ovId&&s.shId===shId);
-  if(idx>-1){
-    _sheetStack.splice(idx,1);
-    // 코드로 닫을 땐 추가했던 히스토리 단계를 되돌림
-    _closingByCode=true;
-    history.back();
-  }
+  if(idx>-1) _sheetStack.splice(idx,1);
 }
-// 폰 뒤로가기 → 열린 창만 닫기 / 창 없으면 두 번 눌러 종료
+function _closeTopSheet(){
+  const s=_sheetStack.pop();
+  if(!s) return false;
+  document.getElementById(s.ovId).classList.remove('open');
+  document.getElementById(s.shId).classList.remove('open');
+  return true;
+}
+// 종료 가드: 항상 히스토리 맨 위에 가드 단계를 유지
 let _exitArmed=false;
+function _pushGuard(){ history.pushState({guard:true}, ''); }
 window.addEventListener('popstate', ()=>{
-  if(_closingByCode){ _closingByCode=false; return; }
+  // 1) 열린 창이 있으면 그 창부터 닫기
   if(_sheetStack.length){
-    const s=_sheetStack.pop();
-    document.getElementById(s.ovId).classList.remove('open');
-    document.getElementById(s.shId).classList.remove('open');
+    _closeTopSheet();
+    _pushGuard();           // 가드 다시 세워 다음 뒤로가기 받기
     return;
   }
-  // 열린 창이 없을 때: 한 번 더 누르면 종료 안내
+  // 2) 창 없을 때: 두 번 눌러 종료
   if(_exitArmed){
-    // 두 번째 뒤로가기 → 실제로 뒤로(앱 종료/이전 페이지)
-    history.back();
+    _exitArmed=false;
+    history.back();         // 진짜로 뒤로(앱 종료/이전 페이지)
     return;
   }
   _exitArmed=true;
   showToast('한 번 더 누르면 종료됩니다');
-  // 다시 앞쪽 단계를 만들어, 다음 뒤로가기를 받을 수 있게
-  history.pushState({guard:true}, '');
+  _pushGuard();             // 가드 다시 세움
   setTimeout(()=>{ _exitArmed=false; }, 2000);
 });
-// 첫 진입 시 종료 가드용 단계 하나 추가
-history.pushState({guard:true}, '');
+// 첫 진입 시 가드 단계 추가
+_pushGuard();
 
 // 작업 추가
 function openAddModal(){openSheet('addOverlay','addModal');}
