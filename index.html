@@ -1072,10 +1072,10 @@ function openShipModal(idx){
       style="background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600;color:#3c3c43;cursor:pointer;text-align:left;width:100%;margin-bottom:8px">
       📋 선명 클립보드 복사
     </button>
-    <a href="${imo?`https://www.marinetraffic.com/en/ais/details/ships/imo:${imo}`:`https://www.marinetraffic.com/en/data/?asset_type=vessels&columns=flag,shipname&quicksearch=${encodeURIComponent(name)}`}" target="_blank" rel="noopener noreferrer"
-       style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px;margin-bottom:8px">
+    <div onclick="openMarineTraffic('${imo}','${name.replace(/'/g,"\\'")}')"
+       style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;cursor:pointer;color:#1c1c1e;font-weight:600;font-size:14px;margin-bottom:8px">
       <span>🌐 MarineTraffic</span><span style="color:#0a84ff">→</span>
-    </a>
+    </div>
     <a href="https://www.vesselfinder.com/vessels?name=${encodeURIComponent(name)}" target="_blank"
        style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px;margin-bottom:8px">
       <span>🔍 VesselFinder</span><span style="color:#0a84ff">→</span>
@@ -1355,6 +1355,16 @@ async function deleteVesselFromForm(){
 ].forEach(fn => { try{ window[fn]=eval(fn); }catch(e){} });
 
 /* ===== 공지사항 ===== */
+function openMarineTraffic(imo, name){
+  const url = imo
+    ? `https://www.marinetraffic.com/en/ais/details/ships/imo:${imo}`
+    : `https://www.marinetraffic.com/en/data/?asset_type=vessels&columns=flag,shipname&quicksearch=${encodeURIComponent(name)}`;
+  // 새 탭에서 강제로 열어 앱 가로채기 우회
+  const w = window.open(url, '_blank');
+  if(w) w.opener=null;
+}
+window.openMarineTraffic=openMarineTraffic;
+
 async function editNotice(){
   let cur=document.getElementById('noticeText').textContent||'';
   if(cur==='공지 추가하기') cur='';
