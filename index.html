@@ -161,6 +161,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 
 <div id="weeklySummary"></div>
 
+<div id="noticeBar" onclick="editNotice()" style="background:#fff8e1;border-bottom:1px solid #ffe082;padding:9px 16px;font-size:13px;color:#8a6d00;cursor:pointer;display:flex;align-items:center;gap:7px">
+  <span style="flex-shrink:0">📢</span>
+  <span id="noticeText" style="flex:1;line-height:1.4"></span>
+  <span style="flex-shrink:0;color:#c7a300;font-size:12px">✏️</span>
+</div>
+
 <div class="search-bar">
   <div class="search-inner">
     <span style="color:#8e8e93;font-size:16px">🔍</span>
@@ -472,6 +478,13 @@ onSnapshot(doc(db,'meta','deleted_ids'), snap=>{
   deletedIds=snap.exists()?new Set(snap.data().ids||[]):new Set();
   refresh();
 }, ()=>{deletedIds=new Set();refresh();});
+
+onSnapshot(doc(db,'meta','notice'), snap=>{
+  const txt=snap.exists()?(snap.data().text||''):'';
+  const el=document.getElementById('noticeText');
+  if(txt){ el.textContent=txt; el.style.opacity='1'; el.style.fontStyle='normal'; }
+  else{ el.textContent='공지 추가하기'; el.style.opacity='0.55'; el.style.fontStyle='italic'; }
+}, ()=>{});
 
 function getVesselMaster(name){
   // Firebase 선박 마스터 우선, 없으면 BASE_VESSELS
@@ -1335,6 +1348,18 @@ async function deleteVesselFromForm(){
   'renderWeeklySummary','bulkCheongguComplete',
   'quickStatusChange','quickCheongguToggle',
 ].forEach(fn => { try{ window[fn]=eval(fn); }catch(e){} });
+
+/* ===== 공지사항 ===== */
+async function editNotice(){
+  let cur=document.getElementById('noticeText').textContent||'';
+  if(cur==='공지 추가하기') cur='';
+  const v=prompt('공지사항을 입력하세요 (지우려면 비우고 확인)', cur);
+  if(v===null) return;
+  try{
+    await setDoc(doc(db,'meta','notice'),{text:v.trim(),updatedAt:new Date().toISOString()});
+  }catch(e){ alert('저장 실패: '+e.message); }
+}
+window.editNotice=editNotice;
 
 /* ===== 달력 뷰 ===== */
 let calYear, calMonth, calSelectedDate=null, isCalendarMode=false;
