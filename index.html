@@ -809,21 +809,22 @@ window.addEventListener('popstate', ()=>{
   // 1) 열린 창이 있으면 그 창부터 닫기
   if(_sheetStack.length){
     _closeTopSheet();
-    _pushGuard();           // 가드 다시 세워 다음 뒤로가기 받기
+    _pushGuard();
     return;
   }
   // 2) 창 없을 때: 두 번 눌러 종료
   if(_exitArmed){
     _exitArmed=false;
-    history.back();         // 진짜로 뒤로(앱 종료/이전 페이지)
+    history.back();
     return;
   }
   _exitArmed=true;
   showToast('한 번 더 누르면 종료됩니다');
-  _pushGuard();             // 가드 다시 세움
+  _pushGuard();
   setTimeout(()=>{ _exitArmed=false; }, 2000);
 });
-// 첫 진입 시 가드 단계 추가
+// 첫 진입 시 가드 단계를 2개 쌓아둠 (PWA에서 첫 뒤로가기에 바로 안 나가도록)
+_pushGuard();
 _pushGuard();
 
 // 작업 추가
