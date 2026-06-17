@@ -497,9 +497,24 @@ function localDateStr(d){
   const day=String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
+function refDateInfo(d){
+  // 입항·하가·출항 중 아직 안 지난(D-day>=0) 가장 이른 일정을 기준으로.
+  // 다 지났으면 가장 늦은(최근) 일정.
+  if(!d) return {date:null,basis:''};
+  const cands=[['입항',d.날짜],['하가',d.하가일정],['출항',d.출항일정]].filter(x=>x[1]);
+  if(!cands.length) return {date:null,basis:''};
+  let future=null, latest=null;
+  for(const [name,dt] of cands){
+    if(!latest||dt>latest.date) latest={date:dt,basis:name};
+    const dd=getDday(dt);
+    if(dd!==null&&dd>=0){
+      if(!future||dt<future.date) future={date:dt,basis:name};
+    }
+  }
+  return future||latest;
+}
 function refDate(d){
-  // 예정/D-day 판정 기준: 출항일정이 있으면 출항, 없으면 입항(작업)날짜
-  return (d&&d.출항일정)?d.출항일정:(d?d.날짜:null);
+  return refDateInfo(d).date;
 }
 function getDday(dateStr){
   if(!dateStr) return null;
@@ -617,7 +632,7 @@ function renderList(){
     const ddayBg=d.상태!=='예정'?'':dday===0?'#ff375f':dday>0&&dday<=3?'#ff9f0a':dday>3&&dday<=7?'#fde68a':dday>7?'#f2f2f7':dday!==null&&dday<0?'#e5e5ea':'';
     const ddayTextColor=dday!==null&&dday>3&&dday<=7?'#92400e':dday>7?'#3c3c43':dday!==null&&dday<0?'#3c3c43':'#fff';
     const ddayLabel=d.상태!=='예정'||dday===null?'':dday===0?'D-day':dday>0?`D-${dday}`:`D+${Math.abs(dday)}`;
-    const ddayBasis=(d.상태==='예정'&&dday!==null)?(d.출항일정?'출항':'입항'):'';
+    const ddayBasis=(d.상태==='예정'&&dday!==null)?refDateInfo(d).basis:'';
     const ddayBlock=makeDdayBlock(ddayLabel,ddayBg,ddayTextColor,ddayBasis);
     const 청구Tag=d.청구==='청구대기'?`<span class="tag" style="background:#fce4ec;color:#c62828">💰 청구대기</span>`:d.청구==='청구완료'?`<span class="tag" style="background:#e8f5e9;color:#2e7d32">✅ 청구완료</span>`:'';
     const isArrivalImminent=d.상태==='예정'&&dday!==null&&dday>=1&&dday<=7;
