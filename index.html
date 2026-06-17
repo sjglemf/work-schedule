@@ -784,13 +784,11 @@ function updateFilterLabels(){
 
 // 공통 시트 열기/닫기
 let _sheetStack=[];
-function _anySheetOpen(){
-  return _sheetStack.length>0;
-}
 function openSheet(ovId,shId){
   document.getElementById(ovId).classList.add('open');
   requestAnimationFrame(()=>document.getElementById(shId).classList.add('open'));
-  if(!_sheetStack.some(s=>s.ovId===ovId)) _sheetStack.push({ovId,shId});
+  _sheetStack.push({ovId,shId});
+  history.pushState({sheet:ovId}, '');   // 창 열 때 히스토리 단계 추가 (이게 핵심)
 }
 function closeSheet(ovId,shId){
   document.getElementById(ovId).classList.remove('open');
@@ -798,22 +796,13 @@ function closeSheet(ovId,shId){
   const idx=_sheetStack.findIndex(s=>s.ovId===ovId);
   if(idx>-1) _sheetStack.splice(idx,1);
 }
-function _closeTopSheet(){
-  const s=_sheetStack.pop();
-  if(!s) return false;
-  document.getElementById(s.ovId).classList.remove('open');
-  document.getElementById(s.shId).classList.remove('open');
-  return true;
-}
-// 즉시 가드를 깔아둠 (load 대기하면 이미 지나가서 안 먹음)
-try{ history.pushState({guard:1}, ''); }catch(e){}
 window.addEventListener('popstate', ()=>{
-  // 디버그: 화면 상단에 잠깐 표시
-  _backDebug('뒤로가기 감지 / 열린창='+_sheetStack.length);
-  // 항상 가드를 다시 세움
-  history.pushState({guard:1}, '');
-  // 열린 창이 있으면 닫기
-  _closeTopSheet();
+  _backDebug('뒤로가기 / 열린창='+_sheetStack.length);
+  if(_sheetStack.length){
+    const s=_sheetStack.pop();
+    document.getElementById(s.ovId).classList.remove('open');
+    document.getElementById(s.shId).classList.remove('open');
+  }
 });
 function _backDebug(msg){
   let d=document.getElementById('_backDbg');
@@ -823,10 +812,8 @@ function _backDebug(msg){
     d.style.cssText='position:fixed;top:0;left:0;right:0;background:#ff375f;color:#fff;font-size:12px;padding:6px;text-align:center;z-index:99999';
     document.body.appendChild(d);
   }
-  d.textContent=msg;
-  d.style.display='block';
-  clearTimeout(d._t);
-  d._t=setTimeout(()=>{d.style.display='none'},1500);
+  d.textContent=msg; d.style.display='block';
+  clearTimeout(d._t); d._t=setTimeout(()=>{d.style.display='none'},1500);
 }
 
 // 작업 추가
