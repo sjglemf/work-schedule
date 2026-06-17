@@ -22,7 +22,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 .sync-dot.loading{background:#ff9f0a;animation:pulse 1s infinite}
 .sync-dot.error{background:#ff375f}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes noticeBlink{0%,100%{background:#ffd54f}50%{background:#ffe57f}}
+@keyframes noticeBlink{0%,100%{background:#ffd54f}50%{background:#ff9800}}
 .search-bar{background:#fff;border-bottom:1px solid #e5e5ea;padding:10px 14px;position:sticky;top:50px;z-index:190}
 .search-inner{display:flex;align-items:center;background:#f2f2f7;border-radius:12px;padding:0 12px;gap:8px}
 .search-inner input{flex:1;border:none;background:transparent;font-size:15px;padding:10px 0;outline:none;color:#1c1c1e}
@@ -162,7 +162,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sa
 
 <div id="weeklySummary"></div>
 
-<div id="noticeBar" onclick="editNotice()" style="background:#ffd54f;padding:12px 16px;font-size:15px;color:#5d4000;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;animation:noticeBlink 1.6s ease-in-out infinite">
+<div id="noticeBar" onclick="editNotice()" style="background:#ffd54f;padding:12px 16px;font-size:15px;color:#5d4000;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;animation:noticeBlink 1s ease-in-out infinite">
   <span style="flex-shrink:0">📢</span>
   <span id="noticeText" style="flex:1;line-height:1.4"></span>
 </div>
@@ -483,7 +483,7 @@ onSnapshot(doc(db,'meta','notice'), snap=>{
   const txt=snap.exists()?(snap.data().text||''):'';
   const el=document.getElementById('noticeText');
   const bar=document.getElementById('noticeBar');
-  if(txt){ el.textContent=txt; el.style.opacity='1'; el.style.fontStyle='normal'; bar.style.animation='noticeBlink 1.6s ease-in-out infinite'; }
+  if(txt){ el.textContent=txt; el.style.opacity='1'; el.style.fontStyle='normal'; bar.style.animation='noticeBlink 1s ease-in-out infinite'; }
   else{ el.textContent='공지 추가하기'; el.style.opacity='0.55'; el.style.fontStyle='italic'; bar.style.animation='none'; bar.style.background='#fff8e1'; }
 }, ()=>{});
 
@@ -784,7 +784,6 @@ function updateFilterLabels(){
 
 // 공통 시트 열기/닫기
 let _sheetStack=[];
-let _exitArmed=false;
 function openSheet(ovId,shId){
   document.getElementById(ovId).classList.add('open');
   requestAnimationFrame(()=>document.getElementById(shId).classList.add('open'));
@@ -798,25 +797,12 @@ function closeSheet(ovId,shId){
   if(idx>-1) _sheetStack.splice(idx,1);
 }
 window.addEventListener('popstate', ()=>{
-  // 1) 열린 창이 있으면 창만 닫기
   if(_sheetStack.length){
     const s=_sheetStack.pop();
     document.getElementById(s.ovId).classList.remove('open');
     document.getElementById(s.shId).classList.remove('open');
-    return;
   }
-  // 2) 창 없을 때(홈): 두 번 눌러야 종료
-  if(_exitArmed){
-    history.back();   // 두 번째 → 실제 종료
-    return;
-  }
-  _exitArmed=true;
-  showToast('한 번 더 누르면 종료됩니다');
-  history.pushState({home:1}, '');   // 가드 다시 세워 앱이 안 나가게
-  setTimeout(()=>{ _exitArmed=false; }, 2000);
 });
-// 첫 진입 시 가드 한 단계 (홈에서 첫 뒤로가기를 받기 위함)
-history.pushState({home:1}, '');
 
 // 작업 추가
 function openAddModal(){openSheet('addOverlay','addModal');}
