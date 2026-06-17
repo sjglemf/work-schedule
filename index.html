@@ -516,6 +516,17 @@ function refDateInfo(d){
 function refDate(d){
   return refDateInfo(d).date;
 }
+function showsDday(d){
+  // 예정이면 항상, 완료여도 하가/출항이 아직 안 지났으면 D-day 표시
+  if(!d) return false;
+  if(d.상태==='예정') return true;
+  if(d.상태==='완료'){
+    const hd=d.하가일정?getDday(d.하가일정):null;
+    const od=d.출항일정?getDday(d.출항일정):null;
+    if((hd!==null&&hd>=0)||(od!==null&&od>=0)) return true;
+  }
+  return false;
+}
 function getDday(dateStr){
   if(!dateStr) return null;
   const today = new Date(); today.setHours(0,0,0,0);
@@ -627,12 +638,13 @@ function renderList(){
     const 선박구분=vm?.선박구분||d.선박구분||'';
     const imo=vm?.imo||d.imo||'';
     const sClass='s-'+(d.상태||'');
-    const ddayBadge=d.상태==='예정'?getDdayBadge(refDate(d)):'';
+    const _showDday=showsDday(d);
+    const ddayBadge=_showDday?getDdayBadge(refDate(d)):'';
     const dday=getDday(refDate(d));
-    const ddayBg=d.상태!=='예정'?'':dday===0?'#ff375f':dday>0&&dday<=3?'#ff9f0a':dday>3&&dday<=7?'#fde68a':dday>7?'#f2f2f7':dday!==null&&dday<0?'#e5e5ea':'';
+    const ddayBg=!_showDday?'':dday===0?'#ff375f':dday>0&&dday<=3?'#ff9f0a':dday>3&&dday<=7?'#fde68a':dday>7?'#f2f2f7':dday!==null&&dday<0?'#e5e5ea':'';
     const ddayTextColor=dday!==null&&dday>3&&dday<=7?'#92400e':dday>7?'#3c3c43':dday!==null&&dday<0?'#3c3c43':'#fff';
-    const ddayLabel=d.상태!=='예정'||dday===null?'':dday===0?'D-day':dday>0?`D-${dday}`:`D+${Math.abs(dday)}`;
-    const ddayBasis=(d.상태==='예정'&&dday!==null)?refDateInfo(d).basis:'';
+    const ddayLabel=!_showDday||dday===null?'':dday===0?'D-day':dday>0?`D-${dday}`:`D+${Math.abs(dday)}`;
+    const ddayBasis=(_showDday&&dday!==null)?refDateInfo(d).basis:'';
     const ddayBlock=makeDdayBlock(ddayLabel,ddayBg,ddayTextColor,ddayBasis);
     const 청구Tag=d.청구==='청구대기'?`<span class="tag" style="background:#fce4ec;color:#c62828">💰 청구대기</span>`:d.청구==='청구완료'?`<span class="tag" style="background:#e8f5e9;color:#2e7d32">✅ 청구완료</span>`:'';
     const isArrivalImminent=d.상태==='예정'&&dday!==null&&dday>=1&&dday<=7;
@@ -1050,7 +1062,7 @@ function openShipModal(idx){
     </a>
     <a href="https://info.bptc.co.kr/content/sw/frame/berth_status_text_frame_sw_kr.jsp?p_id=BETX_SH_KR&snb_num=2&snb_div=service" target="_blank"
        style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5ea;border-radius:14px;padding:14px 16px;text-decoration:none;color:#1c1c1e;font-weight:600;font-size:14px;margin-bottom:8px">
-      <span>⚓ BPTC 선석현황</span><span style="color:#0a84ff;font-size:12px">입항시간 →</span>
+      <span>⚓ BPTC 선석현황</span><span style="color:#0a84ff;font-size:12px">감만·신선대 입항시간 →</span>
     </a>
     <div style="background:#fff;border-radius:14px;padding:16px;border:0.5px solid #e5e5ea">
       <div style="font-size:12px;font-weight:700;color:#8e8e93;margin-bottom:10px">📋 작업 이력</div>
@@ -1191,7 +1203,7 @@ function buildVesselHistory(name){
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
         <div style="flex:1">
           <div style="font-size:13px;font-weight:600">${s.날짜||'-'} <span style="color:#8e8e93;font-weight:400">${s.장소||''}</span></div>
-          <div style="font-size:12px;color:#8e8e93;margin-top:2px">${[s.메인작업,s.발전기작업].filter(Boolean).join(' · ')||'-'}</div>
+          <div style="font-size:12px;color:#8e8e93;margin-top:2px">${[s.메인작업?`메인 ${s.메인작업}`:'',s.발전기작업?`발전 ${s.발전기작업}`:''].filter(Boolean).join(' · ')||'-'}</div>
         </div>
         <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;${bg};flex-shrink:0">${s.상태||'-'}</span>
       </div>
@@ -1204,15 +1216,16 @@ function kakaoShareWeekly(){
   if(!window.Kakao) return alert('카카오 SDK 로딩 중입니다. 잠시 후 다시 시도해주세요.');
   if(!Kakao.isInitialized()) Kakao.init('c3efc1acfab3eccb3bc2a15e96a20d83');
   const thisWeek=ALL_DATA.filter(d=>{
-    if(d.상태!=='예정') return false;
-    const dd=getDday(d.날짜);
+    if(!showsDday(d)) return false;
+    const dd=getDday(refDate(d));
     return dd!==null&&dd>=0&&dd<=7;
-  }).sort((a,b)=>(a.날짜||'').localeCompare(b.날짜||''));
+  }).sort((a,b)=>(refDate(a)||'').localeCompare(refDate(b)||''));
   if(!thisWeek.length) return alert('이번 주 예정 작업이 없습니다.');
   const lines=thisWeek.map(d=>{
-    const dd=getDday(d.날짜);
+    const info=refDateInfo(d);
+    const dd=getDday(info.date);
     const ddayText=dd===0?'[D-day]':`[D-${dd}]`;
-    return `🚢 ${d.선명} ${ddayText}\n📅 ${d.날짜} · ${d.선사||'-'}\n📍 ${d.장소||'-'}`;
+    return `🚢 ${d.선명} ${ddayText}\n📅 ${info.basis} ${info.date} · ${d.선사||'-'}\n📍 ${d.장소||'-'}`;
   }).join('\n\n');
   const text=`📋 DAUTECH 이번 주 작업 예정\n\n${lines}\n\n총 ${thisWeek.length}건\nDAUTECH: https://sjglemf.github.io/work-schedule/`;
   Kakao.Share.sendDefault({
