@@ -497,6 +497,10 @@ function localDateStr(d){
   const day=String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
+function refDate(d){
+  // 예정/D-day 판정 기준: 출항일정이 있으면 출항, 없으면 입항(작업)날짜
+  return (d&&d.출항일정)?d.출항일정:(d?d.날짜:null);
+}
 function getDday(dateStr){
   if(!dateStr) return null;
   const today = new Date(); today.setHours(0,0,0,0);
@@ -543,8 +547,8 @@ function applyFilters(){
   else filtered.sort((a,b)=>(a.선명||'').localeCompare(b.선명||'','ko'));
   // 입항/출항 임박 상단 고정
   filtered.sort((a,b)=>{
-    const da=getDday(a.상태==='예정'?a.날짜:null);
-    const db=getDday(b.상태==='예정'?b.날짜:null);
+    const da=getDday(a.상태==='예정'?refDate(a):null);
+    const db=getDday(b.상태==='예정'?refDate(b):null);
     // D+n ~ D-day: 출항 임박 (da<=0)
     // D-1 ~ D-7: 입항 임박 (1<=da<=7)
     const aPin=da!==null&&da<=7;
@@ -587,9 +591,10 @@ function updateChips(){
   });
 }
 
-function makeDdayBlock(label, bg, textColor){
+function makeDdayBlock(label, bg, textColor, basis){
   if(!label||!bg) return '';
-  return '<span style="background:'+bg+';color:'+textColor+';font-size:24px;font-weight:700;padding:12px 18px;border-radius:11px;white-space:nowrap">'+label+'</span>';
+  const basisHtml=basis?'<span style="font-size:11px;font-weight:700;line-height:1;margin-bottom:2px;opacity:.9">'+basis+'</span>':'';
+  return '<span style="background:'+bg+';color:'+textColor+';border-radius:11px;padding:7px 16px;white-space:nowrap;display:inline-flex;flex-direction:column;align-items:center">'+basisHtml+'<span style="font-size:22px;font-weight:700;line-height:1">'+label+'</span></span>';
 }
 
 function renderList(){
@@ -607,12 +612,13 @@ function renderList(){
     const 선박구분=vm?.선박구분||d.선박구분||'';
     const imo=vm?.imo||d.imo||'';
     const sClass='s-'+(d.상태||'');
-    const ddayBadge=d.상태==='예정'?getDdayBadge(d.날짜):'';
-    const dday=getDday(d.날짜);
+    const ddayBadge=d.상태==='예정'?getDdayBadge(refDate(d)):'';
+    const dday=getDday(refDate(d));
     const ddayBg=d.상태!=='예정'?'':dday===0?'#ff375f':dday>0&&dday<=3?'#ff9f0a':dday>3&&dday<=7?'#fde68a':dday>7?'#f2f2f7':dday!==null&&dday<0?'#e5e5ea':'';
     const ddayTextColor=dday!==null&&dday>3&&dday<=7?'#92400e':dday>7?'#3c3c43':dday!==null&&dday<0?'#3c3c43':'#fff';
     const ddayLabel=d.상태!=='예정'||dday===null?'':dday===0?'D-day':dday>0?`D-${dday}`:`D+${Math.abs(dday)}`;
-    const ddayBlock=makeDdayBlock(ddayLabel,ddayBg,ddayTextColor);
+    const ddayBasis=(d.상태==='예정'&&dday!==null)?(d.출항일정?'출항':'입항'):'';
+    const ddayBlock=makeDdayBlock(ddayLabel,ddayBg,ddayTextColor,ddayBasis);
     const 청구Tag=d.청구==='청구대기'?`<span class="tag" style="background:#fce4ec;color:#c62828">💰 청구대기</span>`:d.청구==='청구완료'?`<span class="tag" style="background:#e8f5e9;color:#2e7d32">✅ 청구완료</span>`:'';
     const isArrivalImminent=d.상태==='예정'&&dday!==null&&dday>=1&&dday<=7;
     const isDepartureImminent=d.상태==='예정'&&dday!==null&&dday<=0;
@@ -1071,7 +1077,7 @@ function widgetFilterWeekly(){
   updateFilterLabels();
   filtered=ALL_DATA.filter(d=>{
     if(d.상태!=='예정')return false;
-    const dd=getDday(d.날짜);
+    const dd=getDday(refDate(d));
     return dd!==null&&dd>=0&&dd<=7;
   }).sort((a,b)=>(a.날짜||'').localeCompare(b.날짜||''));
   document.getElementById('resultCount').textContent=filtered.length;
@@ -1082,7 +1088,7 @@ function widgetFilterDday(){
   ['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>sel[k].clear());
   document.getElementById('searchInput').value='';
   updateFilterLabels();
-  filtered=ALL_DATA.filter(d=>d.상태==='예정'&&getDday(d.날짜)===0);
+  filtered=ALL_DATA.filter(d=>d.상태==='예정'&&getDday(refDate(d))===0);
   document.getElementById('resultCount').textContent=filtered.length;
   renderList();
 }
@@ -1097,7 +1103,7 @@ function widgetFilterNextWeek(){
   ['상태','구분','메인GOV','발전기GOV','청구'].forEach(k=>sel[k].clear());
   document.getElementById('searchInput').value='';
   updateFilterLabels();
-  filtered=ALL_DATA.filter(d=>d.상태==='예정'&&getDday(d.날짜)!==null&&getDday(d.날짜)>7)
+  filtered=ALL_DATA.filter(d=>d.상태==='예정'&&getDday(refDate(d))!==null&&getDday(refDate(d))>7)
     .sort((a,b)=>(a.날짜||'').localeCompare(b.날짜||''));
   document.getElementById('resultCount').textContent=filtered.length;
   page=1;
@@ -1113,13 +1119,13 @@ function renderWeeklySummary(){
   const thisWeekEnd=new Date(today);thisWeekEnd.setDate(today.getDate()+7);
   const thisWeek=ALL_DATA.filter(d=>{
     if(d.상태!=='예정')return false;
-    const dd=getDday(d.날짜);
+    const dd=getDday(refDate(d));
     return dd!==null&&dd>=0&&dd<=7;
   });
-  const dday=thisWeek.filter(d=>getDday(d.날짜)===0);
+  const dday=thisWeek.filter(d=>getDday(refDate(d))===0);
   const 다음주=ALL_DATA.filter(d=>{
     if(d.상태!=='예정')return false;
-    const dd=getDday(d.날짜);
+    const dd=getDday(refDate(d));
     return dd!==null&&dd>7;
   });
   const 청구대기=ALL_DATA.filter(d=>d.상태==='완료'&&d.청구==='청구대기');
