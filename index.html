@@ -1268,9 +1268,9 @@ function kakaoShareWeekly(){
   const thisWeek=ALL_DATA.filter(d=>{
     if(!showsDday(d)) return false;
     const dd=getDday(refDate(d));
-    return dd!==null&&dd>=0&&dd<=7;
+    return dd!==null&&dd>=0;
   }).sort((a,b)=>(refDate(a)||'').localeCompare(refDate(b)||''));
-  if(!thisWeek.length) return alert('이번 주 예정 작업이 없습니다.');
+  if(!thisWeek.length) return alert('보낼 작업이 없습니다.');
   const lines=thisWeek.map(d=>{
     const info=refDateInfo(d);
     const dd=getDday(info.date);
@@ -1280,7 +1280,7 @@ function kakaoShareWeekly(){
   const noticeEl=document.getElementById('noticeText');
   const noticeTxt=(noticeEl&&noticeEl.textContent&&noticeEl.textContent!=='공지 추가하기')?noticeEl.textContent.trim():'';
   const noticeBlock=noticeTxt?`📢 공지: ${noticeTxt}\n━━━━━━━━━━\n\n`:'';
-  const text=`📋 DAUTECH 이번 주 작업 예정\n\n${noticeBlock}${lines}\n\n총 ${thisWeek.length}건\nDAUTECH: https://sjglemf.github.io/work-schedule/`;
+  const text=`📋 다우테크 작업 예정\n\n${noticeBlock}${lines}\n\n총 ${thisWeek.length}건\nDAUTECH: https://sjglemf.github.io/work-schedule/`;
   Kakao.Share.sendDefault({
     objectType:'text',
     text,
