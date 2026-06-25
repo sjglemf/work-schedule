@@ -1266,6 +1266,9 @@ function kakaoShareWeekly(){
   if(!window.Kakao) return alert('카카오 SDK 로딩 중입니다. 잠시 후 다시 시도해주세요.');
   if(!Kakao.isInitialized()) Kakao.init('c3efc1acfab3eccb3bc2a15e96a20d83');
   const thisWeek=ALL_DATA.filter(d=>{
+    // 예정이면 무조건 포함 (입항 지나 작업중이어도)
+    if(d.상태==='예정') return true;
+    // 그 외엔 D-day 표시 대상(완료지만 하가/출항 미래 등)만
     if(!showsDday(d)) return false;
     const dd=getDday(refDate(d));
     return dd!==null&&dd>=0;
@@ -1274,7 +1277,16 @@ function kakaoShareWeekly(){
   const lines=thisWeek.map(d=>{
     const info=refDateInfo(d);
     const dd=getDday(info.date);
-    const ddayText=dd===0?'[D-day]':`[D-${dd}]`;
+    let ddayText;
+    if(dd!==null&&dd>0){
+      // 아직 안 온 일정 → D-day
+      ddayText=`[D-${dd}]`;
+    }else if(dd===0){
+      ddayText='[D-day]';
+    }else{
+      // 기준일이 지남(입항 등 지나 작업 진행) → 상태로 표시
+      ddayText=(d.상태==='완료')?'[작업완료]':'[작업중]';
+    }
     return `🚢 ${d.선명} ${ddayText}\n📅 ${info.basis} ${info.date} · ${d.선사||'-'}\n📍 ${d.장소||'-'}`;
   }).join('\n\n');
   const noticeEl=document.getElementById('noticeText');
