@@ -496,9 +496,9 @@ onSnapshot(doc(db,'meta','notice'), snap=>{
 }, ()=>{});
 
 function getVesselMaster(name){
-  // Firebase 선박 마스터 우선, 없으면 BASE_VESSELS
-  const fv = fbVessels.find(v=>v.선명===name);
-  if(fv) return fv;
+  // Firebase 선박 마스터 우선(같은 선명 문서가 여러 개면 updatedAt 최신 것), 없으면 BASE_VESSELS
+  const matches = fbVessels.filter(v=>v.선명===name);
+  if(matches.length) return matches.reduce((a,b)=>((b.updatedAt||'')>(a.updatedAt||'')?b:a));
   return BASE_VESSELS.find(v=>v.선명===name)||null;
 }
 
@@ -946,8 +946,13 @@ function getAllVessels(){
     const uid='base_'+BASE_DATA.findIndex(d=>d.선명===v.선명);
     if(!deletedIds.has(uid)) masterMap[v.선명]={...v};
   });
-  // 2. Firebase vessels (마스터) - 덮어씀
-  fbVessels.forEach(v=>{ masterMap[v.선명]={...v}; });
+  // 2. Firebase vessels (마스터) - 덮어씀 (같은 선명 중복 문서는 updatedAt 최신 것 우선)
+  const fbByName={};
+  fbVessels.forEach(v=>{
+    const cur=fbByName[v.선명];
+    if(!cur || (v.updatedAt||'')>(cur.updatedAt||'')) fbByName[v.선명]=v;
+  });
+  Object.values(fbByName).forEach(v=>{ masterMap[v.선명]={...v}; });
   // 3. schedules에서 선박명 추출 (마스터에 없는 것만)
   const allSched=[...fbSchedules,...BASE_WITH_ID.filter(d=>!deletedIds.has(d._uid))];
   const seenNames=new Set();
@@ -1075,7 +1080,10 @@ async function submitVesselForm(){
         synced=await syncPastRecords(선명);
       }
     } else {
-      await addDoc(collection(db,'vessels'),data);
+      // 같은 선명의 Firebase 문서가 이미 있으면(중복 방지) 그걸 업데이트, 없으면 새로 생성
+      const existing=fbVessels.find(v=>v.선명===선명);
+      if(existing) await updateDoc(doc(db,'vessels',existing._fbId),data);
+      else await addDoc(collection(db,'vessels'),data);
       synced=await syncPastRecords(선명);
     }
     closeVesselForm();
