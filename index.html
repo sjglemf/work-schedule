@@ -1038,40 +1038,50 @@ async function submitVesselForm(){
   const 선명=gv('vf_선명');
   if(!선명){alert('선박명은 필수입니다.');return;}
   const data={선명,선사:gv('vf_선사'),imo:gv('vf_imo'),선박구분:gv('vf_선박구분'),메인엔진:gv('vf_메인엔진'),메인GOV:gv('vf_메인GOV'),발전기:gv('vf_발전기'),발전기GOV:gv('vf_발전기GOV'),updatedAt:new Date().toISOString()};
+  // 선박 식별 정보(엔진/거버너/발전기)만 과거 기록에도 함께 반영. 작업내용(메인작업 등)은 건드리지 않음.
+  const engineFields={메인엔진:data.메인엔진,메인GOV:data.메인GOV,발전기:data.발전기,발전기GOV:data.발전기GOV};
   const fbId=document.getElementById('vf_fbId').value;
   const oldName=document.getElementById('vf_oldName')?.value||'';
   const btn=document.getElementById('vesselSubmitBtn');btn.textContent='저장 중...';btn.disabled=true;
+
+  // 과거 기록 동기화 헬퍼: matchName 기준으로 fbSchedules/BASE_DATA 기록을 engineFields(+선명 변경시 선명)로 업데이트
+  async function syncPastRecords(matchName, extra){
+    const fields = extra ? {...engineFields, ...extra} : {...engineFields};
+    const updates=fbSchedules.filter(s=>s.선명===matchName);
+    const promises=updates.map(s=>updateDoc(doc(db,'schedules',s._fbId),fields));
+    const baseMatches=BASE_WITH_ID.filter(s=>s.선명===matchName&&!deletedIds.has(s._uid));
+    if(baseMatches.length>0){
+      const newDel=new Set(deletedIds);
+      baseMatches.forEach(s=>newDel.add(s._uid));
+      promises.push(setDoc(doc(db,'meta','deleted_ids'),{ids:[...newDel]}));
+      baseMatches.forEach(s=>promises.push(addDoc(collection(db,'schedules'),{...s,...fields,_uid:undefined,createdAt:s.날짜||new Date().toISOString()})));
+    }
+    await Promise.all(promises);
+    return updates.length+baseMatches.length;
+  }
+
   try{
+    let synced=0;
     if(fbId){
       // 선명이 바뀐 경우 작업 기록도 전부 업데이트
       if(oldName && oldName!==선명){
         if(!confirm(`"${oldName}" → "${선명}" 으로 선명 변경 시 관련 작업 기록도 모두 변경됩니다. 계속할까요?`)){
           btn.textContent='💾 저장';btn.disabled=false;return;
         }
-        // Firebase schedules에서 같은 선명 찾아서 업데이트
-        const updates=fbSchedules.filter(s=>s.선명===oldName);
-        await Promise.all([
-          updateDoc(doc(db,'vessels',fbId),data),
-          ...updates.map(s=>updateDoc(doc(db,'schedules',s._fbId),{선명}))
-        ]);
-        // BASE_DATA에서 같은 선명은 deleted_ids에 추가 후 새로 Firebase에 저장
-        const baseMatches=BASE_WITH_ID.filter(s=>s.선명===oldName&&!deletedIds.has(s._uid));
-        if(baseMatches.length>0){
-          const newDel=new Set(deletedIds);
-          baseMatches.forEach(s=>newDel.add(s._uid));
-          const newDocs=baseMatches.map(s=>addDoc(collection(db,'schedules'),{...s,선명,_uid:undefined,createdAt:s.날짜||new Date().toISOString()}));
-          await Promise.all([setDoc(doc(db,'meta','deleted_ids'),{ids:[...newDel]}),...newDocs]);
-        }
+        await updateDoc(doc(db,'vessels',fbId),data);
+        synced=await syncPastRecords(oldName,{선명});
       } else {
         await updateDoc(doc(db,'vessels',fbId),data);
+        synced=await syncPastRecords(선명);
       }
     } else {
       await addDoc(collection(db,'vessels'),data);
+      synced=await syncPastRecords(선명);
     }
     closeVesselForm();
     renderVesselList(document.getElementById('vesselSearchInput').value);
     renderList();
-    showToast(`✅ "${선명}" 저장됐습니다!`);
+    showToast(synced>0?`✅ "${선명}" 저장 + 과거 기록 ${synced}건도 함께 업데이트됐습니다!`:`✅ "${선명}" 저장됐습니다!`);
   }catch(e){alert('저장 실패: '+e.message);}
   btn.textContent='💾 저장';btn.disabled=false;
 }
