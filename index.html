@@ -605,8 +605,8 @@ function applyFilters(){
     const db=getDday(b.상태==='예정'?refDate(b):null);
     // D+n ~ D-day: 출항 임박 (da<=0)
     // D-1 ~ D-7: 입항 임박 (1<=da<=7)
-    const aPin=da!==null&&da<=7;
-    const bPin=db!==null&&db<=7;
+    const aPin=da!==null
+    const bPin=db!==null
     if(aPin&&bPin) return da-db; // D-day 작은 것 먼저
     if(aPin&&!bPin) return -1;
     if(!aPin&&bPin) return 1;
